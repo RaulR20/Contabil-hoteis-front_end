@@ -135,6 +135,18 @@ import { Component, input } from '@angular/core';
           <line x1="15" y1="14" x2="15" y2="14" />
           <line x1="9" y1="18" x2="15" y2="18" />
         }
+        @case ('x') {
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        }
+        @case ('chevron-down') {
+          <polyline points="6 9 12 15 18 9" />
+        }
+        @case ('alert-circle') {
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        }
       }
     </svg>
   `,

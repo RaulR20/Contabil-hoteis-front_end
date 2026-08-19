@@ -1,0 +1,19 @@
+<div class="modal-backdrop" (click)="onBackdropClick($event)">
+  <div class="modal-panel" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <div>
+        <h2>{{ title() }}</h2>
+        @if (subtitle()) {
+          <p>{{ subtitle() }}</p>
+        }
+      </div>
+      <button type="button" class="modal-close" aria-label="Fechar" (click)="close()">
+        <app-icon name="x" [size]="16" />
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <ng-content />
+    </div>
+  </div>
+</div>

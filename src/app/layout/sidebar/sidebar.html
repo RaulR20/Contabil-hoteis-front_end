@@ -50,11 +50,11 @@
 
   <div class="sidebar-footer">
     <div class="user-card">
-      <span class="avatar">RF</span>
+      <span class="avatar">{{ (user()?.name ?? 'U').charAt(0) }}</span>
       @if (!collapsed()) {
         <div class="user-info">
-          <strong>Raul Fernandes</strong>
-          <small>Gestor Financeiro</small>
+          <strong>{{ user()?.name }}</strong>
+          <small>{{ user()?.role }}</small>
         </div>
       }
     </div>

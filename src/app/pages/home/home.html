@@ -3,14 +3,14 @@
     <h1>Dashboard</h1>
     <p>Visão geral da gestão financeira do hotel — {{ today | date: 'fullDate' }}</p>
   </div>
-  <button type="button" class="btn-primary">
+  <button type="button" class="btn-primary" (click)="openDialog()">
     <app-icon name="plus-circle" [size]="16" />
     Novo Lançamento
   </button>
 </div>
 
 <section class="kpi-grid">
-  @for (kpi of kpis; track kpi.label) {
+  @for (kpi of kpis(); track kpi.label) {
     <article class="kpi-card" [class]="'tone-' + kpi.tone">
       <div class="kpi-icon">
         <app-icon [name]="kpi.icon" [size]="20" />
@@ -29,7 +29,7 @@
 
 <section class="quick-actions">
   @for (action of quickActions; track action.label) {
-    <button type="button" class="quick-action">
+    <button type="button" class="quick-action" (click)="runQuickAction(action)">
       <span class="quick-action-icon">
         <app-icon [name]="action.icon" [size]="18" />
       </span>
@@ -57,7 +57,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (entry of cashFlow; track entry.description) {
+        @for (entry of cashFlow.todayEntries(); track entry.id) {
           <tr>
             <td>{{ entry.description }}</td>
             <td><span class="tag">{{ entry.category }}</span></td>
@@ -65,6 +65,10 @@
             <td class="align-right" [class.text-success]="entry.type === 'receita'" [class.text-danger]="entry.type === 'despesa'">
               {{ entry.type === 'receita' ? '+' : '-' }}{{ entry.value | currency: 'BRL' }}
             </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="empty-state">Nenhum lançamento registrado hoje.</td>
           </tr>
         }
       </tbody>
@@ -93,3 +97,7 @@
     </ul>
   </div>
 </section>
+
+@if (dialogOpen()) {
+  <app-new-entry-dialog [initialType]="dialogType()" (closed)="closeDialog()" />
+}

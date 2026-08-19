@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Icon } from '../../shared/icon/icon';
+import { AuthService } from '../../core/auth/auth.service';
 
 interface NavItem {
   label: string;
@@ -21,7 +22,10 @@ interface NavSection {
   styleUrl: './sidebar.scss',
 })
 export class Sidebar {
+  private readonly auth = inject(AuthService);
+
   protected readonly collapsed = signal(false);
+  protected readonly user = this.auth.user;
 
   protected readonly sections: NavSection[] = [
     {

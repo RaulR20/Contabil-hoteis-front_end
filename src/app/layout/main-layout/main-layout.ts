@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
 import { Sidebar } from '../sidebar/sidebar';
 import { Icon } from '../../shared/icon/icon';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -10,4 +11,12 @@ import { Icon } from '../../shared/icon/icon';
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.scss',
 })
-export class MainLayout {}
+export class MainLayout {
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+
+  logout(): void {
+    this.auth.logout();
+    this.router.navigateByUrl('/login');
+  }
+}
