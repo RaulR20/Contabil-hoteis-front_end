@@ -1,0 +1,62 @@
+<aside class="sidebar" [class.collapsed]="collapsed()">
+  <div class="sidebar-header">
+    <a routerLink="/home" class="brand">
+      <span class="brand-mark">
+        <app-icon name="building" [size]="20" />
+      </span>
+      @if (!collapsed()) {
+        <span class="brand-text">
+          HotelConta
+          <small>Gestão Financeira</small>
+        </span>
+      }
+    </a>
+    <button
+      type="button"
+      class="collapse-btn"
+      (click)="toggle()"
+      [attr.aria-label]="collapsed() ? 'Expandir menu' : 'Recolher menu'"
+    >
+      <app-icon name="chevrons-left" [size]="16" />
+    </button>
+  </div>
+
+  <nav class="sidebar-nav">
+    @for (section of sections; track section.title) {
+      <div class="nav-section">
+        @if (!collapsed()) {
+          <p class="nav-section-title">{{ section.title }}</p>
+        }
+        <ul>
+          @for (item of section.items; track item.route) {
+            <li>
+              <a
+                [routerLink]="item.route"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: false }"
+                [title]="item.label"
+              >
+                <app-icon [name]="item.icon" [size]="18" />
+                @if (!collapsed()) {
+                  <span>{{ item.label }}</span>
+                }
+              </a>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <span class="avatar">RF</span>
+      @if (!collapsed()) {
+        <div class="user-info">
+          <strong>Raul Fernandes</strong>
+          <small>Gestor Financeiro</small>
+        </div>
+      }
+    </div>
+  </div>
+</aside>

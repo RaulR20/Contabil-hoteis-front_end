@@ -1,0 +1,95 @@
+<div class="page-header">
+  <div>
+    <h1>Dashboard</h1>
+    <p>Visão geral da gestão financeira do hotel — {{ today | date: 'fullDate' }}</p>
+  </div>
+  <button type="button" class="btn-primary">
+    <app-icon name="plus-circle" [size]="16" />
+    Novo Lançamento
+  </button>
+</div>
+
+<section class="kpi-grid">
+  @for (kpi of kpis; track kpi.label) {
+    <article class="kpi-card" [class]="'tone-' + kpi.tone">
+      <div class="kpi-icon">
+        <app-icon [name]="kpi.icon" [size]="20" />
+      </div>
+      <div class="kpi-body">
+        <span class="kpi-label">{{ kpi.label }}</span>
+        <strong class="kpi-value">{{ kpi.value | currency: 'BRL' }}</strong>
+        <span class="kpi-variation" [class.negative]="kpi.variation < 0">
+          <app-icon [name]="kpi.variation < 0 ? 'arrow-down-right' : 'arrow-up-right'" [size]="12" />
+          {{ kpi.variation > 0 ? '+' : '' }}{{ kpi.variation }}% vs. ontem
+        </span>
+      </div>
+    </article>
+  }
+</section>
+
+<section class="quick-actions">
+  @for (action of quickActions; track action.label) {
+    <button type="button" class="quick-action">
+      <span class="quick-action-icon">
+        <app-icon [name]="action.icon" [size]="18" />
+      </span>
+      <span class="quick-action-text">
+        <strong>{{ action.label }}</strong>
+        <small>{{ action.description }}</small>
+      </span>
+    </button>
+  }
+</section>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Fluxo de Caixa — Hoje</h2>
+      <a href="javascript:void(0)" class="panel-link">Ver tudo</a>
+    </div>
+    <table class="cashflow-table">
+      <thead>
+        <tr>
+          <th>Descrição</th>
+          <th>Categoria</th>
+          <th>Horário</th>
+          <th class="align-right">Valor</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (entry of cashFlow; track entry.description) {
+          <tr>
+            <td>{{ entry.description }}</td>
+            <td><span class="tag">{{ entry.category }}</span></td>
+            <td>{{ entry.date | date: 'HH:mm' }}</td>
+            <td class="align-right" [class.text-success]="entry.type === 'receita'" [class.text-danger]="entry.type === 'despesa'">
+              {{ entry.type === 'receita' ? '+' : '-' }}{{ entry.value | currency: 'BRL' }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Hóspedes em Andamento</h2>
+      <a href="javascript:void(0)" class="panel-link">Ver tudo</a>
+    </div>
+    <ul class="guest-list">
+      @for (guest of guests; track guest.guest) {
+        <li>
+          <div class="guest-avatar">{{ guest.guest.charAt(0) }}</div>
+          <div class="guest-info">
+            <strong>{{ guest.guest }}</strong>
+            <small>Quarto {{ guest.room }}</small>
+          </div>
+          <div class="guest-meta">
+            <span class="status-pill" [class]="'tone-' + statusTone(guest.status)">{{ guest.status }}</span>
+            <strong>{{ guest.amount | currency: 'BRL' }}</strong>
+          </div>
+        </li>
+      }
+    </ul>
+  </div>
+</section>
