@@ -99,6 +99,28 @@ function seedReservations(): Reservation[] {
       notes: 'Cliente desistiu da viagem.',
       status: 'Cancelada',
     },
+    {
+      id: crypto.randomUUID(),
+      guestName: 'Fernanda Duarte',
+      cpf: '234.567.891-00',
+      room: '102 - Standard',
+      checkIn: daysFromNow(0),
+      checkOut: daysFromNow(3),
+      guestsCount: 1,
+      notes: 'Chegada prevista para hoje.',
+      status: 'Confirmada',
+    },
+    {
+      id: crypto.randomUUID(),
+      guestName: 'Ricardo Nunes',
+      cpf: '345.678.912-00',
+      room: '305 - Luxo',
+      checkIn: daysFromNow(-3),
+      checkOut: daysFromNow(0),
+      guestsCount: 2,
+      notes: 'Saída prevista para hoje.',
+      status: 'Confirmada',
+    },
   ];
 }
 

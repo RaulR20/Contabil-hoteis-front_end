@@ -4,6 +4,7 @@ import { Home } from './pages/home/home';
 import { Login } from './pages/login/login';
 import { Pagamentos } from './pages/pagamentos/pagamentos';
 import { Reservas } from './pages/reservas/reservas';
+import { Checkin } from './pages/checkin/checkin';
 import { authGuard, guestGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
@@ -16,6 +17,7 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'home' },
       { path: 'home', component: Home },
       { path: 'reservas', component: Reservas },
+      { path: 'checkin', component: Checkin },
       { path: 'pagamentos', component: Pagamentos },
     ],
   },

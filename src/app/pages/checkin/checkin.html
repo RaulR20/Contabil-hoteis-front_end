@@ -1,0 +1,115 @@
+<div class="page-header">
+  <div>
+    <h1>Check-in / Check-out</h1>
+    <p>Controle de chegadas, saídas e hóspedes atualmente hospedados</p>
+  </div>
+</div>
+
+<div class="info-banner">
+  <app-icon name="alert-circle" [size]="18" />
+  <p>
+    Esta tela é apenas estrutural. A confirmação de check-in e check-out será habilitada quando a
+    integração com o backend e as APIs de reservas estiver disponível — por ora, as ações abaixo
+    ficam desativadas para evitar alterações de status sem validação de dados reais.
+  </p>
+</div>
+
+<section class="columns">
+  <div class="panel">
+    <div class="panel-header">
+      <h2>
+        <app-icon name="arrow-down-right" [size]="16" />
+        Chegadas de Hoje
+      </h2>
+      <span class="count-badge">{{ arrivals().length }}</span>
+    </div>
+    <ul class="guest-list">
+      @for (reservation of arrivals(); track trackById($index, reservation)) {
+        <li>
+          <div class="guest-info">
+            <strong>{{ reservation.guestName }}</strong>
+            <small>{{ reservation.room }} · {{ reservation.guestsCount }} hóspede(s)</small>
+          </div>
+          <div class="guest-dates">
+            <small>Check-out</small>
+            <span>{{ reservation.checkOut | date: 'dd/MM/yyyy' }}</span>
+          </div>
+          <button type="button" class="action-btn" disabled title="Indisponível — requer integração com backend/API">
+            <app-icon name="lock" [size]="13" />
+            Realizar Check-in
+          </button>
+        </li>
+      } @empty {
+        <li class="empty-row">Nenhuma chegada prevista para hoje.</li>
+      }
+    </ul>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h2>
+        <app-icon name="arrow-up-right" [size]="16" />
+        Saídas de Hoje
+      </h2>
+      <span class="count-badge">{{ departures().length }}</span>
+    </div>
+    <ul class="guest-list">
+      @for (reservation of departures(); track trackById($index, reservation)) {
+        <li>
+          <div class="guest-info">
+            <strong>{{ reservation.guestName }}</strong>
+            <small>{{ reservation.room }} · {{ reservation.guestsCount }} hóspede(s)</small>
+          </div>
+          <div class="guest-dates">
+            <small>Check-in</small>
+            <span>{{ reservation.checkIn | date: 'dd/MM/yyyy' }}</span>
+          </div>
+          <button type="button" class="action-btn" disabled title="Indisponível — requer integração com backend/API">
+            <app-icon name="lock" [size]="13" />
+            Realizar Check-out
+          </button>
+        </li>
+      } @empty {
+        <li class="empty-row">Nenhuma saída prevista para hoje.</li>
+      }
+    </ul>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-header">
+    <h2>
+      <app-icon name="building" [size]="16" />
+      Hóspedes Atualmente no Hotel
+    </h2>
+    <span class="count-badge">{{ inHouse().length }}</span>
+  </div>
+  <table class="stay-table">
+    <thead>
+      <tr>
+        <th>Hóspede</th>
+        <th>Quarto</th>
+        <th>Check-in</th>
+        <th>Check-out Previsto</th>
+        <th>Hóspedes</th>
+        <th class="align-right">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (reservation of inHouse(); track trackById($index, reservation)) {
+        <tr>
+          <td>{{ reservation.guestName }}</td>
+          <td>{{ reservation.room }}</td>
+          <td>{{ reservation.checkIn | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ reservation.checkOut | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ reservation.guestsCount }}</td>
+          <td class="align-right"><span class="status-pill">Hospedado</span></td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="empty-state">Nenhum hóspede hospedado no momento.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</section>
