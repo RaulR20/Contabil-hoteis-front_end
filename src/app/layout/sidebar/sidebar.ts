@@ -38,7 +38,7 @@ export class Sidebar {
         { label: 'Reservas', icon: 'calendar', route: '/reservas' },
         { label: 'Check-in / Check-out', icon: 'key', route: '/checkin' },
         { label: 'Consumo de Serviços', icon: 'coffee', route: '/consumos' },
-        { label: 'Hóspedes', icon: 'user', route: '/hospedes' },
+        { label: 'Hóspedes', icon: 'history', route: '/hospedes' },
       ],
     },
     {

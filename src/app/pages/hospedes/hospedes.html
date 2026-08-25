@@ -1,0 +1,119 @@
+<div class="page-header">
+  <div>
+    <h1>Hóspedes</h1>
+    <p>Histórico de hóspedes que já se hospedaram no hotel</p>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="state-panel">
+    <span class="spinner"></span>
+    Carregando histórico de hóspedes...
+  </div>
+} @else if (error()) {
+  <div class="state-panel error">
+    <app-icon name="alert-circle" [size]="20" />
+    <p>{{ error() }}</p>
+    <button type="button" class="btn-secondary" (click)="fetchGuests()">
+      <app-icon name="refresh-cw" [size]="14" />
+      Tentar novamente
+    </button>
+  </div>
+} @else {
+  <section class="kpi-grid">
+    <article class="kpi-card tone-primary">
+      <div class="kpi-icon"><app-icon name="users" [size]="20" /></div>
+      <div class="kpi-body">
+        <span class="kpi-label">Hóspedes no Histórico</span>
+        <strong class="kpi-value">{{ totalGuests() }}</strong>
+      </div>
+    </article>
+    <article class="kpi-card tone-success">
+      <div class="kpi-icon"><app-icon name="history" [size]="20" /></div>
+      <div class="kpi-body">
+        <span class="kpi-label">Hóspedes Recorrentes</span>
+        <strong class="kpi-value">{{ recurringGuests() }}</strong>
+      </div>
+    </article>
+    <article class="kpi-card tone-warning">
+      <div class="kpi-icon"><app-icon name="dollar-sign" [size]="20" /></div>
+      <div class="kpi-body">
+        <span class="kpi-label">Ticket Médio por Estadia</span>
+        <strong class="kpi-value">{{ averageTicket() | currency: 'BRL' }}</strong>
+      </div>
+    </article>
+    <article class="kpi-card tone-primary">
+      <div class="kpi-icon"><app-icon name="bar-chart" [size]="20" /></div>
+      <div class="kpi-body">
+        <span class="kpi-label">Total Faturado (Histórico)</span>
+        <strong class="kpi-value">{{ totalRevenue() | currency: 'BRL' }}</strong>
+      </div>
+    </article>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <h2>Todos os Hóspedes</h2>
+      <div class="search-box">
+        <app-icon name="search" [size]="14" />
+        <input
+          type="text"
+          placeholder="Buscar por nome, CPF ou e-mail..."
+          [value]="searchTerm()"
+          (input)="searchTerm.set($any($event.target).value)"
+        />
+      </div>
+    </div>
+
+    <table class="guests-table">
+      <thead>
+        <tr>
+          <th>Hóspede</th>
+          <th>Contato</th>
+          <th>Estadias</th>
+          <th>Última Visita</th>
+          <th>Total Gasto</th>
+          <th class="align-right">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (guest of filteredGuests; track guest.id) {
+          <tr>
+            <td>
+              <div class="guest-cell">
+                <span class="avatar">{{ initials(guest.name) }}</span>
+                <div>
+                  <strong>{{ guest.name }}</strong>
+                  <small>{{ guest.cpf }}</small>
+                </div>
+              </div>
+            </td>
+            <td>
+              <small class="contact-line">{{ guest.email }}</small>
+              <small class="contact-line">{{ guest.phone }}</small>
+            </td>
+            <td>
+              <span class="stay-count">{{ guest.stays.length }}</span>
+            </td>
+            <td>{{ lastStay(guest) | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ totalSpent(guest) | currency: 'BRL' }}</td>
+            <td class="align-right">
+              <button type="button" class="action-btn" (click)="openDetail(guest)">
+                <app-icon name="history" [size]="13" />
+                Ver Histórico
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty-state">Nenhum hóspede encontrado.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+}
+
+@if (selectedGuest(); as guest) {
+  <app-guest-detail-dialog [guest]="guest" (closed)="closeDetail()" />
+}

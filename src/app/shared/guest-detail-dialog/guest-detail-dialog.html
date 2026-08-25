@@ -1,0 +1,43 @@
+<app-modal [title]="guest().name" [subtitle]="'Histórico completo de estadias no hotel'" (closed)="close()">
+  <div class="guest-profile">
+    <div class="guest-avatar">{{ initials(guest().name) }}</div>
+    <div class="guest-contact">
+      <span><app-icon name="user" [size]="13" /> {{ guest().cpf }}</span>
+      <span><app-icon name="mail" [size]="13" /> {{ guest().email }}</span>
+      <span><app-icon name="phone" [size]="13" /> {{ guest().phone }}</span>
+    </div>
+  </div>
+
+  <div class="summary-row">
+    <div class="summary-item">
+      <small>Estadias</small>
+      <strong>{{ guest().stays.length }}</strong>
+    </div>
+    <div class="summary-item">
+      <small>Noites Totais</small>
+      <strong>{{ totalNights() }}</strong>
+    </div>
+    <div class="summary-item">
+      <small>Total Gasto</small>
+      <strong>{{ totalSpent() | currency: 'BRL' }}</strong>
+    </div>
+  </div>
+
+  <div class="stays-list">
+    @for (stay of sortedStays(); track stay.id) {
+      <div class="stay-item">
+        <div class="stay-icon">
+          <app-icon name="calendar" [size]="16" />
+        </div>
+        <div class="stay-body">
+          <strong>{{ stay.room }}</strong>
+          <small>
+            {{ stay.checkIn | date: 'dd/MM/yyyy' }} — {{ stay.checkOut | date: 'dd/MM/yyyy' }} ·
+            {{ nights(stay.checkIn, stay.checkOut) }} noite(s)
+          </small>
+        </div>
+        <strong class="stay-value">{{ stay.totalSpent | currency: 'BRL' }}</strong>
+      </div>
+    }
+  </div>
+</app-modal>
