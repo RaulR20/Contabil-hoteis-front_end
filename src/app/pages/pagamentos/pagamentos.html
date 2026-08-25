@@ -1,0 +1,62 @@
+<div class="page-header">
+  <div>
+    <h1>Pagamentos e Contas</h1>
+    <p>Central de meios de pagamento e integrações financeiras do hotel</p>
+  </div>
+  <span class="badge-soon">
+    <app-icon name="clock" [size]="14" />
+    Em breve
+  </span>
+</div>
+
+<div class="info-banner">
+  <app-icon name="alert-circle" [size]="18" />
+  <p>
+    Esta área está em construção. Aqui serão centralizados os pagamentos recebidos por cartão,
+    dinheiro, Pix, boleto e outras formas integradas via API, com conciliação automática junto
+    ao fluxo de caixa.
+  </p>
+</div>
+
+<section class="panel">
+  <div class="panel-header">
+    <h2>Formas de Pagamento</h2>
+  </div>
+  <div class="method-grid">
+    @for (method of methods; track method.label) {
+      <article class="method-card">
+        <div class="method-icon">
+          <app-icon [name]="method.icon" [size]="20" />
+        </div>
+        <div class="method-body">
+          <div class="method-title-row">
+            <strong>{{ method.label }}</strong>
+            <span class="status-chip" [class]="'status-' + method.status">
+              {{ statusLabel(method.status) }}
+            </span>
+          </div>
+          <p>{{ method.description }}</p>
+        </div>
+      </article>
+    }
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-header">
+    <h2>Integrações Planejadas</h2>
+  </div>
+  <div class="integration-list">
+    @for (integration of integrations; track integration.label) {
+      <div class="integration-item">
+        <div class="integration-icon">
+          <app-icon [name]="integration.icon" [size]="18" />
+        </div>
+        <div>
+          <strong>{{ integration.label }}</strong>
+          <p>{{ integration.description }}</p>
+        </div>
+      </div>
+    }
+  </div>
+</section>

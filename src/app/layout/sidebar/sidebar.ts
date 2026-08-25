@@ -46,6 +46,7 @@ export class Sidebar {
       items: [
         { label: 'Fluxo de Caixa', icon: 'trending-up', route: '/fluxo-caixa' },
         { label: 'Faturamento', icon: 'file-text', route: '/faturamento' },
+        { label: 'Pagamentos e Contas', icon: 'credit-card', route: '/pagamentos' },
         { label: 'Fechamento de Caixa', icon: 'lock', route: '/fechamento-caixa' },
         { label: 'Relatórios', icon: 'bar-chart', route: '/relatorios' },
       ],

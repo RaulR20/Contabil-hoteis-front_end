@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { MainLayout } from './layout/main-layout/main-layout';
 import { Home } from './pages/home/home';
 import { Login } from './pages/login/login';
+import { Pagamentos } from './pages/pagamentos/pagamentos';
 import { authGuard, guestGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
@@ -13,6 +14,7 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'home' },
       { path: 'home', component: Home },
+      { path: 'pagamentos', component: Pagamentos },
     ],
   },
   { path: '**', redirectTo: 'home' },

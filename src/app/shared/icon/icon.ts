@@ -142,6 +142,20 @@ import { Component, input } from '@angular/core';
         @case ('chevron-down') {
           <polyline points="6 9 12 15 18 9" />
         }
+        @case ('zap') {
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+        }
+        @case ('globe') {
+          <circle cx="12" cy="12" r="10" />
+          <line x1="2" y1="12" x2="22" y2="12" />
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+        }
+        @case ('banknote') {
+          <rect x="2" y="6" width="20" height="12" rx="2" />
+          <circle cx="12" cy="12" r="2" />
+          <line x1="6" y1="12" x2="6" y2="12" />
+          <line x1="18" y1="12" x2="18" y2="12" />
+        }
         @case ('alert-circle') {
           <circle cx="12" cy="12" r="10" />
           <line x1="12" y1="8" x2="12" y2="12" />
