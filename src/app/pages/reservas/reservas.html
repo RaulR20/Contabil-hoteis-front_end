@@ -1,0 +1,107 @@
+<div class="page-header">
+  <div>
+    <h1>Reservas</h1>
+    <p>Cadastro e acompanhamento das reservas de quartos do hotel</p>
+  </div>
+  <button type="button" class="btn-primary" (click)="openDialog()">
+    <app-icon name="plus-circle" [size]="16" />
+    Nova Reserva
+  </button>
+</div>
+
+<section class="kpi-grid">
+  <article class="kpi-card tone-primary">
+    <div class="kpi-icon"><app-icon name="calendar" [size]="20" /></div>
+    <div class="kpi-body">
+      <span class="kpi-label">Total de Reservas</span>
+      <strong class="kpi-value">{{ reservationService.total() }}</strong>
+    </div>
+  </article>
+  <article class="kpi-card tone-success">
+    <div class="kpi-icon"><app-icon name="check-circle" [size]="20" /></div>
+    <div class="kpi-body">
+      <span class="kpi-label">Confirmadas</span>
+      <strong class="kpi-value">{{ reservationService.confirmadas() }}</strong>
+    </div>
+  </article>
+  <article class="kpi-card tone-warning">
+    <div class="kpi-icon"><app-icon name="clock" [size]="20" /></div>
+    <div class="kpi-body">
+      <span class="kpi-label">Aguardando Confirmação</span>
+      <strong class="kpi-value">{{ reservationService.pendentes() }}</strong>
+    </div>
+  </article>
+  <article class="kpi-card tone-danger">
+    <div class="kpi-icon"><app-icon name="x" [size]="20" /></div>
+    <div class="kpi-body">
+      <span class="kpi-label">Canceladas</span>
+      <strong class="kpi-value">{{ reservationService.canceladas() }}</strong>
+    </div>
+  </article>
+</section>
+
+<section class="panel">
+  <div class="panel-header">
+    <h2>Todas as Reservas</h2>
+    <div class="search-box">
+      <app-icon name="search" [size]="14" />
+      <input
+        type="text"
+        placeholder="Buscar por hóspede ou quarto..."
+        [value]="searchTerm()"
+        (input)="searchTerm.set($any($event.target).value)"
+      />
+    </div>
+  </div>
+
+  <table class="reservations-table">
+    <thead>
+      <tr>
+        <th>Hóspede</th>
+        <th>Quarto</th>
+        <th>Check-in</th>
+        <th>Check-out</th>
+        <th>Hóspedes</th>
+        <th>Status</th>
+        <th class="align-right">Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (reservation of filteredReservations; track reservation.id) {
+        <tr>
+          <td>
+            <strong>{{ reservation.guestName }}</strong>
+            <small>{{ reservation.cpf }}</small>
+          </td>
+          <td>{{ reservation.room }}</td>
+          <td>{{ reservation.checkIn | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ reservation.checkOut | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ reservation.guestsCount }}</td>
+          <td>
+            <span class="status-pill" [class]="'tone-' + statusTone(reservation.status)">
+              {{ reservation.status }}
+            </span>
+          </td>
+          <td class="align-right">
+            @if (reservation.status === 'Reserva Criada') {
+              <button type="button" class="action-btn confirm" (click)="confirm(reservation)">Confirmar</button>
+              <button type="button" class="action-btn cancel" (click)="cancel(reservation)">Cancelar</button>
+            } @else if (reservation.status === 'Confirmada') {
+              <button type="button" class="action-btn cancel" (click)="cancel(reservation)">Cancelar</button>
+            } @else {
+              <span class="muted">—</span>
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="7" class="empty-state">Nenhuma reserva encontrada.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</section>
+
+@if (dialogOpen()) {
+  <app-new-reservation-dialog (closed)="closeDialog()" />
+}

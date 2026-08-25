@@ -1,0 +1,89 @@
+<app-modal
+  [title]="'Nova Reserva'"
+  [subtitle]="'Cadastre os dados da reserva de um quarto'"
+  (closed)="close()"
+>
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <label class="field">
+      <span>Nome do Hóspede</span>
+      <input type="text" formControlName="guestName" placeholder="Ex.: Maria Souza" />
+      @if (submitted() && form.controls.guestName.invalid) {
+        <small class="field-error">Informe o nome completo do hóspede.</small>
+      }
+    </label>
+
+    <div class="field-row">
+      <label class="field">
+        <span>CPF</span>
+        <input type="text" formControlName="cpf" placeholder="000.000.000-00" />
+        @if (submitted() && form.controls.cpf.invalid) {
+          <small class="field-error">Informe um CPF válido (000.000.000-00).</small>
+        }
+      </label>
+
+      <label class="field">
+        <span>Quarto</span>
+        <div class="select-wrap">
+          <select formControlName="room">
+            <option value="" disabled>Selecione</option>
+            @for (room of rooms; track room) {
+              <option [value]="room">{{ room }}</option>
+            }
+          </select>
+          <app-icon name="chevron-down" [size]="14" />
+        </div>
+        @if (submitted() && form.controls.room.invalid) {
+          <small class="field-error">Selecione um quarto.</small>
+        }
+      </label>
+    </div>
+
+    <div class="field-row">
+      <label class="field">
+        <span>Check-in</span>
+        <input type="date" formControlName="checkIn" />
+      </label>
+
+      <label class="field">
+        <span>Check-out</span>
+        <input type="date" formControlName="checkOut" />
+      </label>
+    </div>
+    @if (submitted() && form.errors?.['invalidRange']) {
+      <small class="field-error">A data de check-out deve ser posterior à de check-in.</small>
+    }
+
+    <label class="field">
+      <span>Número de Hóspedes</span>
+      <input type="number" formControlName="guestsCount" min="1" max="10" />
+      @if (submitted() && form.controls.guestsCount.invalid) {
+        <small class="field-error">Informe entre 1 e 10 hóspedes.</small>
+      }
+    </label>
+
+    <label class="field">
+      <span>Observações</span>
+      <textarea formControlName="notes" rows="2" placeholder="Opcional"></textarea>
+    </label>
+
+    @if (roomConflict()) {
+      <div class="alert-error">
+        <app-icon name="alert-circle" [size]="14" />
+        Este quarto já está reservado para o período selecionado.
+      </div>
+    }
+
+    <div class="dialog-actions">
+      <button type="button" class="btn-secondary" (click)="close()">Cancelar</button>
+      <button type="submit" class="btn-primary" [disabled]="saving()">
+        @if (saving()) {
+          <span class="spinner"></span>
+          Salvando...
+        } @else {
+          <app-icon name="plus-circle" [size]="16" />
+          Salvar Reserva
+        }
+      </button>
+    </div>
+  </form>
+</app-modal>
