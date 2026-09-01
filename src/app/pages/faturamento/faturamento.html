@@ -1,0 +1,55 @@
+<div class="page-header">
+  <div>
+    <h1>Faturamento</h1>
+    <p>Resumo do faturamento de hospedagem e consumo — {{ monthLabel() }}</p>
+  </div>
+</div>
+
+<section class="stat-grid">
+  <article class="stat-box">
+    <div class="stat-icon tone-primary">
+      <app-icon name="trending-up" [size]="22" />
+    </div>
+    <span class="stat-label">Média Diária de Faturamento</span>
+    <strong class="stat-value">{{ dailyAverage() | currency: 'BRL' }}</strong>
+    <span class="stat-hint">no mês corrente</span>
+  </article>
+
+  <article class="stat-box">
+    <div class="stat-icon tone-warning">
+      <app-icon name="calendar" [size]="22" />
+    </div>
+    <span class="stat-label">Média Semanal de Faturamento</span>
+    <strong class="stat-value">{{ weeklyAverage() | currency: 'BRL' }}</strong>
+    <span class="stat-hint">no mês corrente</span>
+  </article>
+
+  <article class="stat-box highlight">
+    <div class="stat-icon tone-success">
+      <app-icon name="bar-chart" [size]="22" />
+    </div>
+    <span class="stat-label">Faturamento Mensal (Total)</span>
+    <strong class="stat-value">{{ monthlyTotal() | currency: 'BRL' }}</strong>
+    <span class="stat-hint">somatório do mês corrente</span>
+  </article>
+</section>
+
+<section class="panel">
+  <div class="panel-header">
+    <h2>Composição do Mês — por Categoria</h2>
+  </div>
+  <ul class="composition-list">
+    @for (slice of categoryBreakdown(); track slice.label) {
+      <li>
+        <div class="composition-icon">
+          <app-icon [name]="categoryIcon(slice.label)" [size]="16" />
+        </div>
+        <span class="composition-label">{{ slice.label }}</span>
+        <span class="composition-percentage">{{ slice.percentage }}%</span>
+        <strong class="composition-value">{{ slice.value | currency: 'BRL' }}</strong>
+      </li>
+    } @empty {
+      <li class="empty-row">Nenhuma receita registrada neste mês.</li>
+    }
+  </ul>
+</section>

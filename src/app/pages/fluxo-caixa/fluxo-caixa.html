@@ -1,0 +1,136 @@
+<div class="page-header">
+  <div>
+    <h1>Fluxo de Caixa</h1>
+    <p>Extrato completo de entradas e saídas, com saldo acumulado</p>
+  </div>
+  <button type="button" class="btn-primary" (click)="openDialog()">
+    <app-icon name="plus-circle" [size]="16" />
+    Novo Lançamento
+  </button>
+</div>
+
+<section class="kpi-grid">
+  <article class="kpi-card tone-primary">
+    <div class="kpi-icon"><app-icon name="dollar-sign" [size]="20" /></div>
+    <div class="kpi-body">
+      <span class="kpi-label">Saldo Atual em Caixa</span>
+      <strong class="kpi-value">{{ cashFlow.saldoEmCaixa() | currency: 'BRL' }}</strong>
+    </div>
+  </article>
+  <article class="kpi-card tone-success">
+    <div class="kpi-icon"><app-icon name="arrow-up-right" [size]="20" /></div>
+    <div class="kpi-body">
+      <span class="kpi-label">Receitas (filtro atual)</span>
+      <strong class="kpi-value">{{ summary().receitas | currency: 'BRL' }}</strong>
+    </div>
+  </article>
+  <article class="kpi-card tone-danger">
+    <div class="kpi-icon"><app-icon name="arrow-down-right" [size]="20" /></div>
+    <div class="kpi-body">
+      <span class="kpi-label">Despesas (filtro atual)</span>
+      <strong class="kpi-value">{{ summary().despesas | currency: 'BRL' }}</strong>
+    </div>
+  </article>
+  <article class="kpi-card tone-warning">
+    <div class="kpi-icon"><app-icon name="file-text" [size]="20" /></div>
+    <div class="kpi-body">
+      <span class="kpi-label">Lançamentos (filtro atual)</span>
+      <strong class="kpi-value">{{ summary().quantidade }}</strong>
+    </div>
+  </article>
+</section>
+
+<section class="panel">
+  <div class="filters">
+    <div class="search-box">
+      <app-icon name="search" [size]="14" />
+      <input
+        type="text"
+        placeholder="Buscar por descrição..."
+        [value]="searchTerm()"
+        (input)="searchTerm.set($any($event.target).value)"
+      />
+    </div>
+
+    <select [value]="typeFilter()" (change)="typeFilter.set($any($event.target).value)">
+      <option value="todos">Todos os tipos</option>
+      <option value="receita">Receitas</option>
+      <option value="despesa">Despesas</option>
+    </select>
+
+    <select [value]="paymentFilter()" (change)="paymentFilter.set($any($event.target).value)">
+      <option value="todos">Todas as formas</option>
+      @for (method of paymentMethods; track method) {
+        <option [value]="method">{{ method }}</option>
+      }
+    </select>
+
+    <select [value]="categoryFilter()" (change)="categoryFilter.set($any($event.target).value)">
+      <option value="todas">Todas as categorias</option>
+      @for (category of categories(); track category) {
+        <option [value]="category">{{ category }}</option>
+      }
+    </select>
+
+    <label class="date-field">
+      <span>De</span>
+      <input type="date" [value]="dateFrom()" (change)="dateFrom.set($any($event.target).value)" />
+    </label>
+
+    <label class="date-field">
+      <span>Até</span>
+      <input type="date" [value]="dateTo()" (change)="dateTo.set($any($event.target).value)" />
+    </label>
+
+    @if (hasActiveFilters()) {
+      <button type="button" class="btn-clear" (click)="clearFilters()">
+        <app-icon name="x" [size]="13" />
+        Limpar filtros
+      </button>
+    }
+  </div>
+
+  <table class="ledger-table">
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Descrição</th>
+        <th>Categoria</th>
+        <th>Pagamento</th>
+        <th class="align-right">Valor</th>
+        <th class="align-right">Saldo</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (entry of filteredEntries(); track entry.id) {
+        <tr>
+          <td class="nowrap">{{ entry.date | date: 'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ entry.description }}</td>
+          <td><span class="tag">{{ entry.category }}</span></td>
+          <td>
+            <span class="payment-tag" [class]="'payment-' + entry.paymentMethod.toLowerCase()">
+              <app-icon [name]="paymentMethodIcon(entry.paymentMethod)" [size]="12" />
+              {{ entry.paymentMethod }}
+            </span>
+          </td>
+          <td
+            class="align-right nowrap"
+            [class.text-success]="entry.type === 'receita'"
+            [class.text-danger]="entry.type === 'despesa'"
+          >
+            {{ entry.type === 'receita' ? '+' : '-' }}{{ entry.value | currency: 'BRL' }}
+          </td>
+          <td class="align-right nowrap">{{ entry.balance | currency: 'BRL' }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="empty-state">Nenhum lançamento encontrado para os filtros selecionados.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</section>
+
+@if (dialogOpen()) {
+  <app-new-entry-dialog [initialType]="dialogType()" (closed)="closeDialog()" />
+}

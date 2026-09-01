@@ -4,7 +4,10 @@ import {
   CashFlowService,
   CashFlowType,
   DESPESA_CATEGORIES,
+  PAYMENT_METHODS,
+  PaymentMethod,
   RECEITA_CATEGORIES,
+  paymentMethodIcon,
 } from '../../core/services/cash-flow.service';
 import { Modal } from '../modal/modal';
 import { Icon } from '../icon/icon';
@@ -24,6 +27,8 @@ export class NewEntryDialog implements OnInit {
   readonly closed = output<void>();
 
   protected readonly type = signal<CashFlowType>('receita');
+  protected readonly paymentMethod = signal<PaymentMethod>('Cartão');
+  protected readonly paymentMethods = PAYMENT_METHODS;
   protected readonly submitted = signal(false);
   protected readonly saving = signal(false);
 
@@ -47,6 +52,12 @@ export class NewEntryDialog implements OnInit {
     this.type.set(type);
     this.form.controls.category.setValue('');
   }
+
+  setPaymentMethod(method: PaymentMethod): void {
+    this.paymentMethod.set(method);
+  }
+
+  protected readonly paymentMethodIcon = paymentMethodIcon;
 
   close(): void {
     this.closed.emit();
@@ -72,6 +83,7 @@ export class NewEntryDialog implements OnInit {
         category,
         value: value ?? 0,
         date: new Date(year, month - 1, day, hours, minutes),
+        paymentMethod: this.paymentMethod(),
       });
       this.saving.set(false);
       this.closed.emit();

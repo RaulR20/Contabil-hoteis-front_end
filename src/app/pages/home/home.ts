@@ -1,7 +1,8 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
 import { Icon } from '../../shared/icon/icon';
-import { CashFlowService, CashFlowType } from '../../core/services/cash-flow.service';
+import { CashFlowService, CashFlowType, paymentMethodIcon } from '../../core/services/cash-flow.service';
 import { NewEntryDialog } from '../../shared/new-entry-dialog/new-entry-dialog';
 
 interface Kpi {
@@ -12,11 +13,10 @@ interface Kpi {
   tone: 'primary' | 'success' | 'danger' | 'warning';
 }
 
-interface GuestStatus {
-  guest: string;
-  room: string;
-  status: 'Hospedado' | 'Faturado' | 'Pago' | 'Pendente';
-  amount: number;
+interface CategoryBreakdown {
+  category: string;
+  value: number;
+  percentage: number;
 }
 
 interface QuickAction {
@@ -24,17 +24,21 @@ interface QuickAction {
   description: string;
   icon: string;
   type?: CashFlowType;
+  route?: string;
 }
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, Icon, NewEntryDialog],
+  imports: [CurrencyPipe, DatePipe, Icon, NewEntryDialog, RouterLink],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
 export class Home {
+  private readonly router = inject(Router);
+
   protected readonly cashFlow = inject(CashFlowService);
+  protected readonly paymentMethodIcon = paymentMethodIcon;
 
   protected readonly today = new Date();
 
@@ -44,15 +48,8 @@ export class Home {
   protected readonly quickActions: QuickAction[] = [
     { label: 'Registrar Receita', description: 'Lançar entrada no fluxo de caixa', icon: 'arrow-up-right', type: 'receita' },
     { label: 'Registrar Despesa', description: 'Lançar saída no fluxo de caixa', icon: 'arrow-down-right', type: 'despesa' },
-    { label: 'Fechar Caixa', description: 'Conferir e encerrar o turno', icon: 'lock' },
+    { label: 'Fechar Caixa', description: 'Conferir e encerrar o turno', icon: 'lock', route: '/fechamento-caixa' },
     { label: 'Gerar Relatório', description: 'Exportar relatório gerencial', icon: 'file-text' },
-  ];
-
-  protected readonly guests: GuestStatus[] = [
-    { guest: 'João Silva', room: '204', status: 'Hospedado', amount: 875.0 },
-    { guest: 'Ana Costa', room: '108', status: 'Faturado', amount: 1240.0 },
-    { guest: 'Marcos Lima', room: '312', status: 'Pago', amount: 640.5 },
-    { guest: 'Beatriz Rocha', room: '117', status: 'Pendente', amount: 430.0 },
   ];
 
   protected readonly kpis = computed<Kpi[]>(() => [
@@ -61,6 +58,25 @@ export class Home {
     { label: 'Despesas do Dia', value: this.cashFlow.despesasDoDia(), variation: -6.4, icon: 'credit-card', tone: 'danger' },
     { label: 'Faturamento do Mês', value: this.cashFlow.faturamentoDoMes(), variation: 8.3, icon: 'bar-chart', tone: 'warning' },
   ]);
+
+  protected readonly categoryBreakdown = computed<CategoryBreakdown[]>(() => {
+    const totals = new Map<string, number>();
+
+    for (const entry of this.cashFlow.todayEntries()) {
+      const signedValue = entry.type === 'receita' ? entry.value : -entry.value;
+      totals.set(entry.category, (totals.get(entry.category) ?? 0) + signedValue);
+    }
+
+    const maxAbsolute = Math.max(1, ...Array.from(totals.values(), Math.abs));
+
+    return Array.from(totals.entries())
+      .map(([category, value]) => ({
+        category,
+        value,
+        percentage: Math.round((Math.abs(value) / maxAbsolute) * 100),
+      }))
+      .sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
+  });
 
   openDialog(type: CashFlowType = 'receita'): void {
     this.dialogType.set(type);
@@ -74,19 +90,8 @@ export class Home {
   runQuickAction(action: QuickAction): void {
     if (action.type) {
       this.openDialog(action.type);
-    }
-  }
-
-  protected statusTone(status: GuestStatus['status']): string {
-    switch (status) {
-      case 'Pago':
-        return 'success';
-      case 'Pendente':
-        return 'danger';
-      case 'Faturado':
-        return 'warning';
-      default:
-        return 'primary';
+    } else if (action.route) {
+      this.router.navigateByUrl(action.route);
     }
   }
 }

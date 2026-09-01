@@ -23,27 +23,46 @@
 
   <nav class="sidebar-nav">
     @for (section of sections; track section.title) {
-      <div class="nav-section">
+      <div class="nav-section" [class.accent]="section.accent" [class.muted]="section.collapsible">
         @if (!collapsed()) {
-          <p class="nav-section-title">{{ section.title }}</p>
-        }
-        <ul>
-          @for (item of section.items; track item.route) {
-            <li>
-              <a
-                [routerLink]="item.route"
-                routerLinkActive="active"
-                [routerLinkActiveOptions]="{ exact: false }"
-                [title]="item.label"
-              >
-                <app-icon [name]="item.icon" [size]="18" />
-                @if (!collapsed()) {
-                  <span>{{ item.label }}</span>
-                }
-              </a>
-            </li>
+          @if (section.collapsible) {
+            <button type="button" class="nav-section-toggle" (click)="toggleSection(section.title)">
+              <span class="nav-section-title">{{ section.title }}</span>
+              <app-icon
+                name="chevron-down"
+                [size]="12"
+                class="toggle-chevron"
+                [class.collapsed]="isSectionCollapsed(section.title)"
+              />
+            </button>
+          } @else {
+            <p class="nav-section-title">
+              {{ section.title }}
+              @if (section.accent) {
+                <span class="accent-dot"></span>
+              }
+            </p>
           }
-        </ul>
+        }
+        @if (collapsed() || !isSectionCollapsed(section.title)) {
+          <ul>
+            @for (item of section.items; track item.route) {
+              <li>
+                <a
+                  [routerLink]="item.route"
+                  routerLinkActive="active"
+                  [routerLinkActiveOptions]="{ exact: false }"
+                  [title]="item.label"
+                >
+                  <app-icon [name]="item.icon" [size]="18" />
+                  @if (!collapsed()) {
+                    <span>{{ item.label }}</span>
+                  }
+                </a>
+              </li>
+            }
+          </ul>
+        }
       </div>
     }
   </nav>

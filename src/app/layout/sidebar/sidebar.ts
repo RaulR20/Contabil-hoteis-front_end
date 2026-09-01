@@ -12,6 +12,10 @@ interface NavItem {
 interface NavSection {
   title: string;
   items: NavItem[];
+  /** Seção estratégica — recebe destaque visual (foco atual do negócio). */
+  accent?: boolean;
+  /** Seção secundária — pode ser recolhida para reduzir peso visual. */
+  collapsible?: boolean;
 }
 
 @Component({
@@ -33,22 +37,24 @@ export class Sidebar {
       items: [{ label: 'Dashboard', icon: 'grid', route: '/home' }],
     },
     {
-      title: 'Operações',
-      items: [
-        { label: 'Reservas', icon: 'calendar', route: '/reservas' },
-        { label: 'Check-in / Check-out', icon: 'key', route: '/checkin' },
-        { label: 'Consumo de Serviços', icon: 'coffee', route: '/consumos' },
-        { label: 'Hóspedes', icon: 'history', route: '/hospedes' },
-      ],
-    },
-    {
       title: 'Financeiro',
+      accent: true,
       items: [
         { label: 'Fluxo de Caixa', icon: 'trending-up', route: '/fluxo-caixa' },
         { label: 'Faturamento', icon: 'file-text', route: '/faturamento' },
         { label: 'Pagamentos e Contas', icon: 'credit-card', route: '/pagamentos' },
         { label: 'Fechamento de Caixa', icon: 'lock', route: '/fechamento-caixa' },
         { label: 'Relatórios', icon: 'bar-chart', route: '/relatorios' },
+      ],
+    },
+    {
+      title: 'Operações',
+      collapsible: true,
+      items: [
+        { label: 'Reservas', icon: 'calendar', route: '/reservas' },
+        { label: 'Check-in / Check-out', icon: 'key', route: '/checkin' },
+        { label: 'Consumo de Serviços', icon: 'coffee', route: '/consumos' },
+        { label: 'Hóspedes', icon: 'history', route: '/hospedes' },
       ],
     },
     {
@@ -60,7 +66,21 @@ export class Sidebar {
     },
   ];
 
+  private readonly collapsedSections = signal(new Set(['Operações']));
+
   toggle(): void {
     this.collapsed.update((value) => !value);
+  }
+
+  toggleSection(title: string): void {
+    this.collapsedSections.update((current) => {
+      const next = new Set(current);
+      next.has(title) ? next.delete(title) : next.add(title);
+      return next;
+    });
+  }
+
+  isSectionCollapsed(title: string): boolean {
+    return this.collapsedSections().has(title);
   }
 }

@@ -144,6 +144,85 @@
   }
 }
 
+/* Seção em destaque — foco estratégico atual (Financeiro) */
+.nav-section.accent {
+  padding: 10px 6px 12px;
+  margin-inline: -6px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, rgba(54, 84, 244, 0.14) 0%, rgba(54, 84, 244, 0.03) 100%);
+  border: 1px solid rgba(54, 84, 244, 0.28);
+
+  .nav-section-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #a9b6ff;
+    font-weight: 700;
+  }
+
+  a {
+    font-weight: 600;
+
+    &.active {
+      box-shadow: 0 2px 10px rgba(54, 84, 244, 0.45);
+    }
+  }
+}
+
+.accent-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(54, 84, 244, 0.25);
+}
+
+/* Seção secundária — recolhível, menor peso visual */
+.nav-section.muted {
+  a {
+    font-size: 0.83rem;
+    color: #8890ab;
+
+    &:hover {
+      color: #fff;
+    }
+
+    &.active {
+      background: var(--color-sidebar-hover);
+      color: #fff;
+    }
+  }
+}
+
+.nav-section-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin: 0 0 6px;
+  padding: 0 10px 0 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+
+  .nav-section-title {
+    margin: 0;
+  }
+
+  app-icon.toggle-chevron {
+    color: #5c6584;
+    transition: transform 0.15s ease;
+
+    &.collapsed {
+      transform: rotate(-90deg);
+    }
+  }
+
+  &:hover .nav-section-title {
+    color: #8890ab;
+  }
+}
+
 .sidebar-footer {
   padding: 14px 16px;
   border-top: 1px solid var(--color-sidebar-border);

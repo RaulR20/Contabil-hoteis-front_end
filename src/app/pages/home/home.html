@@ -45,13 +45,14 @@
   <div class="panel">
     <div class="panel-header">
       <h2>Fluxo de Caixa — Hoje</h2>
-      <a href="javascript:void(0)" class="panel-link">Ver tudo</a>
+      <a routerLink="/fluxo-caixa" class="panel-link">Ver tudo</a>
     </div>
     <table class="cashflow-table">
       <thead>
         <tr>
           <th>Descrição</th>
           <th>Categoria</th>
+          <th>Pagamento</th>
           <th>Horário</th>
           <th class="align-right">Valor</th>
         </tr>
@@ -61,6 +62,12 @@
           <tr>
             <td>{{ entry.description }}</td>
             <td><span class="tag">{{ entry.category }}</span></td>
+            <td>
+              <span class="payment-tag" [class]="'payment-' + entry.paymentMethod.toLowerCase()">
+                <app-icon [name]="paymentMethodIcon(entry.paymentMethod)" [size]="12" />
+                {{ entry.paymentMethod }}
+              </span>
+            </td>
             <td>{{ entry.date | date: 'HH:mm' }}</td>
             <td class="align-right" [class.text-success]="entry.type === 'receita'" [class.text-danger]="entry.type === 'despesa'">
               {{ entry.type === 'receita' ? '+' : '-' }}{{ entry.value | currency: 'BRL' }}
@@ -68,7 +75,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="4" class="empty-state">Nenhum lançamento registrado hoje.</td>
+            <td colspan="5" class="empty-state">Nenhum lançamento registrado hoje.</td>
           </tr>
         }
       </tbody>
@@ -77,22 +84,27 @@
 
   <div class="panel">
     <div class="panel-header">
-      <h2>Hóspedes em Andamento</h2>
-      <a href="javascript:void(0)" class="panel-link">Ver tudo</a>
+      <h2>Movimentação por Categoria — Hoje</h2>
     </div>
-    <ul class="guest-list">
-      @for (guest of guests; track guest.guest) {
+    <ul class="category-list">
+      @for (item of categoryBreakdown(); track item.category) {
         <li>
-          <div class="guest-avatar">{{ guest.guest.charAt(0) }}</div>
-          <div class="guest-info">
-            <strong>{{ guest.guest }}</strong>
-            <small>Quarto {{ guest.room }}</small>
+          <div class="category-row">
+            <span class="tag">{{ item.category }}</span>
+            <strong [class.text-success]="item.value >= 0" [class.text-danger]="item.value < 0">
+              {{ item.value | currency: 'BRL' }}
+            </strong>
           </div>
-          <div class="guest-meta">
-            <span class="status-pill" [class]="'tone-' + statusTone(guest.status)">{{ guest.status }}</span>
-            <strong>{{ guest.amount | currency: 'BRL' }}</strong>
+          <div class="bar-track">
+            <div
+              class="bar-fill"
+              [class.negative]="item.value < 0"
+              [style.width.%]="item.percentage"
+            ></div>
           </div>
         </li>
+      } @empty {
+        <li class="empty-row">Nenhuma movimentação registrada hoje.</li>
       }
     </ul>
   </div>

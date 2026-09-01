@@ -25,6 +25,23 @@
       </button>
     </div>
 
+    <div class="field">
+      <span>Forma de Pagamento</span>
+      <div class="payment-toggle">
+        @for (method of paymentMethods; track method) {
+          <button
+            type="button"
+            class="payment-btn"
+            [class.active]="paymentMethod() === method"
+            (click)="setPaymentMethod(method)"
+          >
+            <app-icon [name]="paymentMethodIcon(method)" [size]="15" />
+            {{ method }}
+          </button>
+        }
+      </div>
+    </div>
+
     <label class="field">
       <span>Descrição</span>
       <input

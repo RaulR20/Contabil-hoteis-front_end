@@ -1,6 +1,7 @@
 import { Injectable, computed, signal } from '@angular/core';
 
 export type CashFlowType = 'receita' | 'despesa';
+export type PaymentMethod = 'Dinheiro' | 'Cartão' | 'Pix';
 
 export interface CashFlowEntry {
   id: string;
@@ -9,6 +10,11 @@ export interface CashFlowEntry {
   type: CashFlowType;
   value: number;
   date: Date;
+  paymentMethod: PaymentMethod;
+}
+
+export interface CashFlowEntryWithBalance extends CashFlowEntry {
+  balance: number;
 }
 
 export interface NewCashFlowEntry {
@@ -17,10 +23,24 @@ export interface NewCashFlowEntry {
   type: CashFlowType;
   value: number;
   date: Date;
+  paymentMethod: PaymentMethod;
 }
 
 export const RECEITA_CATEGORIES = ['Hospedagem', 'Consumo de Serviços', 'Outras Receitas'];
 export const DESPESA_CATEGORIES = ['Manutenção', 'Serviços Terceirizados', 'Compras', 'Salários', 'Outras Despesas'];
+
+export const PAYMENT_METHODS: PaymentMethod[] = ['Dinheiro', 'Cartão', 'Pix'];
+
+export function paymentMethodIcon(method: PaymentMethod): string {
+  switch (method) {
+    case 'Dinheiro':
+      return 'banknote';
+    case 'Pix':
+      return 'zap';
+    default:
+      return 'credit-card';
+  }
+}
 
 const OPENING_BALANCE = 37765.32;
 
@@ -37,6 +57,7 @@ function seedEntries(): CashFlowEntry[] {
       type: 'receita',
       value: 1240.0,
       date: at(14, 50),
+      paymentMethod: 'Pix',
     },
     {
       id: crypto.randomUUID(),
@@ -45,6 +66,7 @@ function seedEntries(): CashFlowEntry[] {
       type: 'despesa',
       value: 610.0,
       date: at(13, 15),
+      paymentMethod: 'Pix',
     },
     {
       id: crypto.randomUUID(),
@@ -53,6 +75,7 @@ function seedEntries(): CashFlowEntry[] {
       type: 'despesa',
       value: 320.9,
       date: at(11, 40),
+      paymentMethod: 'Dinheiro',
     },
     {
       id: crypto.randomUUID(),
@@ -61,6 +84,7 @@ function seedEntries(): CashFlowEntry[] {
       type: 'receita',
       value: 45.0,
       date: at(10, 5),
+      paymentMethod: 'Dinheiro',
     },
     {
       id: crypto.randomUUID(),
@@ -69,6 +93,7 @@ function seedEntries(): CashFlowEntry[] {
       type: 'receita',
       value: 875.0,
       date: at(9, 20),
+      paymentMethod: 'Cartão',
     },
   ];
 }
@@ -113,6 +138,24 @@ export class CashFlowService {
           entry.date.getFullYear() === now.getFullYear(),
       )
       .reduce((sum, entry) => sum + entry.value, 174950.9);
+  });
+
+  /** Saldo em espécie apurável fisicamente — base do futuro fechamento de caixa. */
+  readonly dinheiroEmCaixaHoje = computed(() =>
+    this.todayEntries()
+      .filter((entry) => entry.paymentMethod === 'Dinheiro')
+      .reduce((sum, entry) => sum + (entry.type === 'receita' ? entry.value : -entry.value), 0),
+  );
+
+  /** Extrato cronológico (mais antigo primeiro) com saldo acumulado após cada lançamento. */
+  readonly entriesWithBalance = computed<CashFlowEntryWithBalance[]>(() => {
+    const chronological = [...this.entriesSignal()].sort((a, b) => a.date.getTime() - b.date.getTime());
+    let running = OPENING_BALANCE;
+
+    return chronological.map((entry) => {
+      running += entry.type === 'receita' ? entry.value : -entry.value;
+      return { ...entry, balance: running };
+    });
   });
 
   addEntry(entry: NewCashFlowEntry): void {
