@@ -41,7 +41,7 @@ export class Sidebar {
       accent: true,
       items: [
         { label: 'Fluxo de Caixa', icon: 'trending-up', route: '/fluxo-caixa' },
-        { label: 'Faturamento', icon: 'file-text', route: '/faturamento' },
+        { label: 'Faturamento e Impostos', icon: 'file-text', route: '/faturamento' },
         { label: 'Pagamentos e Contas', icon: 'credit-card', route: '/pagamentos' },
         { label: 'Fechamento de Caixa', icon: 'lock', route: '/fechamento-caixa' },
         { label: 'Relatórios', icon: 'bar-chart', route: '/relatorios' },
@@ -59,10 +59,7 @@ export class Sidebar {
     },
     {
       title: 'Administração',
-      items: [
-        { label: 'Usuários e Permissões', icon: 'users', route: '/usuarios' },
-        { label: 'Taxas e Impostos', icon: 'percent', route: '/taxas' },
-      ],
+      items: [{ label: 'Usuários e Permissões', icon: 'users', route: '/usuarios' }],
     },
   ];
 

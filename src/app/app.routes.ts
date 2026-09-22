@@ -9,6 +9,7 @@ import { Hospedes } from './pages/hospedes/hospedes';
 import { FechamentoCaixa } from './pages/fechamento-caixa/fechamento-caixa';
 import { Faturamento } from './pages/faturamento/faturamento';
 import { FluxoCaixa } from './pages/fluxo-caixa/fluxo-caixa';
+import { Relatorios } from './pages/relatorios/relatorios';
 import { authGuard, guestGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
@@ -27,6 +28,7 @@ export const routes: Routes = [
       { path: 'faturamento', component: Faturamento },
       { path: 'pagamentos', component: Pagamentos },
       { path: 'fechamento-caixa', component: FechamentoCaixa },
+      { path: 'relatorios', component: Relatorios },
     ],
   },
   { path: '**', redirectTo: 'home' },

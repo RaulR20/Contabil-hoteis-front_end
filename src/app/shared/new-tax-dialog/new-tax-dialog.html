@@ -1,0 +1,55 @@
+<app-modal
+  [title]="'Adicionar Imposto ou Taxa'"
+  [subtitle]="'Cadastre um tributo e sua alíquota para o cálculo da carga tributária'"
+  (closed)="close()"
+>
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="field-row">
+      <label class="field">
+        <span>Sigla / Nome</span>
+        <input type="text" formControlName="name" placeholder="Ex.: ICMS" maxlength="20" />
+        @if (submitted() && form.controls.name.invalid) {
+          <small class="field-error">Informe a sigla do tributo.</small>
+        }
+      </label>
+
+      <label class="field">
+        <span>Alíquota (%)</span>
+        <input type="number" formControlName="rate" placeholder="0,00" min="0" max="100" step="0.01" />
+        @if (submitted() && form.controls.rate.invalid) {
+          <small class="field-error">Informe uma alíquota entre 0 e 100.</small>
+        }
+      </label>
+    </div>
+
+    <label class="field">
+      <span>Base de Cálculo</span>
+      <div class="select-wrap">
+        <select formControlName="base">
+          @for (base of bases; track base) {
+            <option [value]="base">{{ base }}</option>
+          }
+        </select>
+        <app-icon name="chevron-down" [size]="14" />
+      </div>
+      <small class="field-hint">Define sobre qual receita do mês a alíquota será aplicada.</small>
+    </label>
+
+    <label class="field">
+      <span>Descrição</span>
+      <textarea
+        formControlName="description"
+        rows="2"
+        placeholder="Opcional — nome completo do tributo, regime, observações"
+      ></textarea>
+    </label>
+
+    <div class="dialog-actions">
+      <button type="button" class="btn-secondary" (click)="close()">Cancelar</button>
+      <button type="submit" class="btn-primary">
+        <app-icon name="plus-circle" [size]="16" />
+        Adicionar
+      </button>
+    </div>
+  </form>
+</app-modal>

@@ -53,3 +53,119 @@
     }
   </ul>
 </section>
+
+<section class="panel">
+  <div class="panel-header with-actions">
+    <div>
+      <h2>Impostos e Taxas</h2>
+      <p class="panel-hint">
+        Alíquotas aplicadas sobre a receita do mês — edite os percentuais conforme o enquadramento do hotel
+      </p>
+    </div>
+    <div class="header-actions">
+      <label class="regime-field">
+        <span>Regime</span>
+        <select (change)="taxService.regime.set($any($event.target).value)">
+          @for (regime of regimes; track regime) {
+            <option [value]="regime" [selected]="regime === taxService.regime()">{{ regime }}</option>
+          }
+        </select>
+      </label>
+      <button type="button" class="btn-add" (click)="openTaxDialog()">
+        <app-icon name="plus-circle" [size]="15" />
+        Adicionar Imposto
+      </button>
+    </div>
+  </div>
+
+  <table class="tax-table">
+    <thead>
+      <tr>
+        <th>Tributo</th>
+        <th>Base de Cálculo</th>
+        <th class="align-right">Base (R$)</th>
+        <th class="align-right">Alíquota (%)</th>
+        <th class="align-right">Valor no Mês</th>
+        <th class="align-right">Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (tax of taxRows(); track tax.id) {
+        <tr [class.inactive]="!tax.active">
+          <td>
+            <strong>{{ tax.name }}</strong>
+            @if (tax.description) {
+              <small>{{ tax.description }}</small>
+            }
+          </td>
+          <td><span class="tag">{{ tax.base }}</span></td>
+          <td class="align-right muted">{{ tax.baseValue | currency: 'BRL' }}</td>
+          <td class="align-right">
+            <input
+              type="number"
+              class="rate-input"
+              [value]="tax.rate"
+              min="0"
+              max="100"
+              step="0.01"
+              (change)="updateRate(tax.id, $any($event.target).value)"
+            />
+          </td>
+          <td class="align-right">
+            @if (tax.active) {
+              <strong>{{ tax.amount | currency: 'BRL' }}</strong>
+            } @else {
+              <span class="muted">—</span>
+            }
+          </td>
+          <td class="align-right actions-cell">
+            <button
+              type="button"
+              class="action-btn"
+              [class.on]="tax.active"
+              (click)="taxService.toggleActive(tax.id)"
+              [title]="tax.active ? 'Desativar tributo' : 'Ativar tributo'"
+            >
+              {{ tax.active ? 'Ativo' : 'Inativo' }}
+            </button>
+            <button
+              type="button"
+              class="action-btn remove"
+              (click)="taxService.removeTax(tax.id)"
+              title="Remover tributo"
+            >
+              <app-icon name="x" [size]="13" />
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="empty-state">Nenhum tributo cadastrado.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <div class="tax-summary">
+    <div class="summary-item">
+      <small>Receita Bruta do Mês</small>
+      <strong>{{ monthlyTotal() | currency: 'BRL' }}</strong>
+    </div>
+    <div class="summary-item">
+      <small>Total de Impostos</small>
+      <strong class="text-danger">{{ totalTaxes() | currency: 'BRL' }}</strong>
+    </div>
+    <div class="summary-item">
+      <small>Carga Tributária Efetiva</small>
+      <strong>{{ effectiveRate() | number: '1.2-2' }}%</strong>
+    </div>
+    <div class="summary-item highlight">
+      <small>Receita Líquida</small>
+      <strong class="text-success">{{ netRevenue() | currency: 'BRL' }}</strong>
+    </div>
+  </div>
+</section>
+
+@if (taxDialogOpen()) {
+  <app-new-tax-dialog (closed)="closeTaxDialog()" />
+}

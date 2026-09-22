@@ -35,6 +35,28 @@ export const ROOMS = [
   '312 - Suíte',
 ];
 
+/** Diária por tipo de quarto — base para o valor previsto das reservas. */
+export const DAILY_RATES: Record<string, number> = {
+  Standard: 320,
+  Luxo: 480,
+  Suíte: 650,
+};
+
+export function dailyRate(room: string): number {
+  const type = room.split(' - ').at(1) ?? '';
+  return DAILY_RATES[type] ?? DAILY_RATES['Standard'];
+}
+
+export function nightsBetween(checkIn: Date, checkOut: Date): number {
+  const nights = Math.round((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+  return Math.max(1, nights);
+}
+
+/** Valor previsto da reserva (diárias × noites) — ainda não faturado. */
+export function estimatedValue(reservation: Pick<Reservation, 'room' | 'checkIn' | 'checkOut'>): number {
+  return dailyRate(reservation.room) * nightsBetween(reservation.checkIn, reservation.checkOut);
+}
+
 function daysFromNow(days: number): Date {
   const date = new Date();
   date.setDate(date.getDate() + days);
