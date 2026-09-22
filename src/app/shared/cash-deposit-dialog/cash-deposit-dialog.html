@@ -1,0 +1,83 @@
+<app-modal
+  [title]="'Lançar Entrada de Dinheiro'"
+  [subtitle]="'Registro de entrada em espécie no caixa do turno'"
+  (closed)="close()"
+>
+  <form [formGroup]="form" novalidate>
+    <div class="backend-notice">
+      <app-icon name="alert-circle" [size]="16" />
+      <p>
+        A sensibilização contábil deste lançamento será feita pelo backend. Os campos abaixo
+        já estão prontos para envio quando a integração estiver disponível.
+      </p>
+    </div>
+
+    <div class="field-row">
+      <label class="field">
+        <span>Valor (R$)</span>
+        <input type="number" formControlName="amount" placeholder="0,00" min="0.01" step="0.01" />
+        @if (form.controls.amount.touched && form.controls.amount.invalid) {
+          <small class="field-error">Informe um valor válido.</small>
+        }
+      </label>
+
+      <label class="field">
+        <span>Origem</span>
+        <div class="select-wrap">
+          <select formControlName="origin">
+            <option value="" disabled>Selecione</option>
+            @for (origin of origins; track origin) {
+              <option [value]="origin">{{ origin }}</option>
+            }
+          </select>
+          <app-icon name="chevron-down" [size]="14" />
+        </div>
+        @if (form.controls.origin.touched && form.controls.origin.invalid) {
+          <small class="field-error">Selecione a origem da entrada.</small>
+        }
+      </label>
+    </div>
+
+    <div class="field-row">
+      <label class="field">
+        <span>Data</span>
+        <input type="date" formControlName="date" />
+      </label>
+
+      <label class="field">
+        <span>Horário</span>
+        <input type="time" formControlName="time" />
+      </label>
+    </div>
+
+    <div class="field">
+      <span>Responsável</span>
+      <div class="readonly-field">
+        <app-icon name="user" [size]="14" />
+        {{ responsible }}
+      </div>
+    </div>
+
+    <label class="field">
+      <span>Observações</span>
+      <textarea
+        formControlName="notes"
+        rows="2"
+        placeholder="Opcional — origem do numerário, autorização etc."
+      ></textarea>
+    </label>
+
+    <div class="dialog-actions">
+      <button type="button" class="btn-secondary" (click)="close()">Cancelar</button>
+      <button
+        type="button"
+        class="btn-primary"
+        disabled
+        title="Indisponível — a sensibilização do lançamento depende da integração com o backend"
+      >
+        <app-icon name="lock" [size]="15" />
+        Registrar Entrada
+      </button>
+    </div>
+  </form>
+</app-modal>

@@ -3,6 +3,10 @@
     <h1>Fechamento de Caixa</h1>
     <p>Conferência do dinheiro em espécie ao final do turno</p>
   </div>
+  <button type="button" class="btn-deposit" (click)="openDepositDialog()">
+    <app-icon name="plus-circle" [size]="16" />
+    Lançar Entrada de Dinheiro
+  </button>
 </div>
 
 <div class="info-banner">
@@ -167,3 +171,7 @@
     </tbody>
   </table>
 </section>
+
+@if (depositDialogOpen()) {
+  <app-cash-deposit-dialog (closed)="closeDepositDialog()" />
+}

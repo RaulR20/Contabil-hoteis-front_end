@@ -2,7 +2,12 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Icon } from '../../shared/icon/icon';
-import { CashFlowService, CashFlowType, paymentMethodIcon } from '../../core/services/cash-flow.service';
+import {
+  CashFlowService,
+  CashFlowType,
+  paymentMethodIcon,
+  paymentMethodTone,
+} from '../../core/services/cash-flow.service';
 import { NewEntryDialog } from '../../shared/new-entry-dialog/new-entry-dialog';
 
 interface Kpi {
@@ -39,6 +44,7 @@ export class Home {
 
   protected readonly cashFlow = inject(CashFlowService);
   protected readonly paymentMethodIcon = paymentMethodIcon;
+  protected readonly paymentMethodTone = paymentMethodTone;
 
   protected readonly today = new Date();
 

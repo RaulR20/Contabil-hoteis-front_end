@@ -1,7 +1,15 @@
 import { Injectable, computed, signal } from '@angular/core';
 
 export type CashFlowType = 'receita' | 'despesa';
-export type PaymentMethod = 'Dinheiro' | 'Cartão' | 'Pix';
+export type PaymentMethod =
+  | 'Dinheiro'
+  | 'Pix'
+  | 'Boleto'
+  | 'TED'
+  | 'DOC'
+  | 'Cartão de Débito'
+  | 'Cartão de Crédito';
+export type PaymentMethodTone = 'primary' | 'success' | 'warning' | 'neutral';
 
 export interface CashFlowEntry {
   id: string;
@@ -29,7 +37,15 @@ export interface NewCashFlowEntry {
 export const RECEITA_CATEGORIES = ['Hospedagem', 'Consumo de Serviços', 'Outras Receitas'];
 export const DESPESA_CATEGORIES = ['Manutenção', 'Serviços Terceirizados', 'Compras', 'Salários', 'Outras Despesas'];
 
-export const PAYMENT_METHODS: PaymentMethod[] = ['Dinheiro', 'Cartão', 'Pix'];
+export const PAYMENT_METHODS: PaymentMethod[] = [
+  'Dinheiro',
+  'Pix',
+  'Cartão de Crédito',
+  'Cartão de Débito',
+  'Boleto',
+  'TED',
+  'DOC',
+];
 
 export function paymentMethodIcon(method: PaymentMethod): string {
   switch (method) {
@@ -37,8 +53,28 @@ export function paymentMethodIcon(method: PaymentMethod): string {
       return 'banknote';
     case 'Pix':
       return 'zap';
+    case 'Boleto':
+      return 'file-text';
+    case 'TED':
+    case 'DOC':
+      return 'repeat';
     default:
       return 'credit-card';
+  }
+}
+
+/** Classificação visual (badge) — evita depender do nome do método, que agora tem espaços. */
+export function paymentMethodTone(method: PaymentMethod): PaymentMethodTone {
+  switch (method) {
+    case 'Pix':
+      return 'success';
+    case 'Dinheiro':
+      return 'warning';
+    case 'Cartão de Crédito':
+    case 'Cartão de Débito':
+      return 'primary';
+    default:
+      return 'neutral'; // Boleto, TED, DOC
   }
 }
 
@@ -66,7 +102,7 @@ function seedEntries(): CashFlowEntry[] {
       type: 'despesa',
       value: 610.0,
       date: at(13, 15),
-      paymentMethod: 'Pix',
+      paymentMethod: 'TED',
     },
     {
       id: crypto.randomUUID(),
@@ -93,7 +129,34 @@ function seedEntries(): CashFlowEntry[] {
       type: 'receita',
       value: 875.0,
       date: at(9, 20),
-      paymentMethod: 'Cartão',
+      paymentMethod: 'Cartão de Crédito',
+    },
+    {
+      id: crypto.randomUUID(),
+      description: 'Faturamento reserva #112 - Camila Ferreira',
+      category: 'Hospedagem',
+      type: 'receita',
+      value: 690.0,
+      date: at(8, 40),
+      paymentMethod: 'Cartão de Débito',
+    },
+    {
+      id: crypto.randomUUID(),
+      description: 'Pagamento fornecedor de enxoval',
+      category: 'Compras',
+      type: 'despesa',
+      value: 480.0,
+      date: at(16, 30),
+      paymentMethod: 'Boleto',
+    },
+    {
+      id: crypto.randomUUID(),
+      description: 'Reembolso de diária — cancelamento',
+      category: 'Outras Despesas',
+      type: 'despesa',
+      value: 250.0,
+      date: at(12, 0),
+      paymentMethod: 'DOC',
     },
   ];
 }

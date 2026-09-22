@@ -4,6 +4,7 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { startWith } from 'rxjs';
 import { Icon } from '../../shared/icon/icon';
+import { CashDepositDialog } from '../../shared/cash-deposit-dialog/cash-deposit-dialog';
 import { CashFlowService, paymentMethodIcon } from '../../core/services/cash-flow.service';
 import { CashClosing, CashClosingService } from '../../core/services/cash-closing.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -11,7 +12,7 @@ import { AuthService } from '../../core/auth/auth.service';
 @Component({
   selector: 'app-fechamento-caixa',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, ReactiveFormsModule, Icon],
+  imports: [CurrencyPipe, DatePipe, ReactiveFormsModule, Icon, CashDepositDialog],
   templateUrl: './fechamento-caixa.html',
   styleUrl: './fechamento-caixa.scss',
 })
@@ -25,6 +26,7 @@ export class FechamentoCaixa {
 
   protected readonly submitted = signal(false);
   protected readonly saving = signal(false);
+  protected readonly depositDialogOpen = signal(false);
 
   protected readonly cashEntriesToday = computed(() =>
     this.cashFlow.todayEntries().filter((entry) => entry.paymentMethod === 'Dinheiro'),
@@ -48,6 +50,14 @@ export class FechamentoCaixa {
     const counted = this.countedAmountSignal();
     return counted === null ? null : counted - this.expectedAmount();
   });
+
+  openDepositDialog(): void {
+    this.depositDialogOpen.set(true);
+  }
+
+  closeDepositDialog(): void {
+    this.depositDialogOpen.set(false);
+  }
 
   submit(): void {
     this.submitted.set(true);

@@ -108,7 +108,7 @@
           <td>{{ entry.description }}</td>
           <td><span class="tag">{{ entry.category }}</span></td>
           <td>
-            <span class="payment-tag" [class]="'payment-' + entry.paymentMethod.toLowerCase()">
+            <span class="payment-tag" [class]="'tone-' + paymentMethodTone(entry.paymentMethod)">
               <app-icon [name]="paymentMethodIcon(entry.paymentMethod)" [size]="12" />
               {{ entry.paymentMethod }}
             </span>

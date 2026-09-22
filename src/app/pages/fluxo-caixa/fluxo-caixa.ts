@@ -10,6 +10,7 @@ import {
   PaymentMethod,
   RECEITA_CATEGORIES,
   paymentMethodIcon,
+  paymentMethodTone,
 } from '../../core/services/cash-flow.service';
 
 type TypeFilter = 'todos' | CashFlowType;
@@ -26,6 +27,7 @@ export class FluxoCaixa {
   protected readonly cashFlow = inject(CashFlowService);
   protected readonly paymentMethods = PAYMENT_METHODS;
   protected readonly paymentMethodIcon = paymentMethodIcon;
+  protected readonly paymentMethodTone = paymentMethodTone;
 
   protected readonly dialogOpen = signal(false);
   protected readonly dialogType = signal<CashFlowType>('receita');
