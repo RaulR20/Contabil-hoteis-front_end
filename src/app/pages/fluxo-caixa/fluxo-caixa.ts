@@ -4,13 +4,16 @@ import { Icon } from '../../shared/icon/icon';
 import { NewEntryDialog } from '../../shared/new-entry-dialog/new-entry-dialog';
 import {
   CashFlowService,
+  CashFlowEntry,
   CashFlowType,
   DESPESA_CATEGORIES,
   PAYMENT_METHODS,
   PaymentMethod,
   RECEITA_CATEGORIES,
   paymentMethodIcon,
+  paymentMethodTone,
 } from '../../core/services/cash-flow.service';
+import { AuthService } from '../../core/auth/auth.service';
 
 type TypeFilter = 'todos' | CashFlowType;
 type PaymentFilter = 'todos' | PaymentMethod;
@@ -24,11 +27,16 @@ type PaymentFilter = 'todos' | PaymentMethod;
 })
 export class FluxoCaixa {
   protected readonly cashFlow = inject(CashFlowService);
+  private readonly auth = inject(AuthService);
+  protected readonly canDelete = computed(() => this.auth.user()?.role !== 'CASHIER');
+  protected readonly actionError = signal<string | null>(null);
   protected readonly paymentMethods = PAYMENT_METHODS;
   protected readonly paymentMethodIcon = paymentMethodIcon;
+  protected readonly paymentMethodTone = paymentMethodTone;
 
   protected readonly dialogOpen = signal(false);
   protected readonly dialogType = signal<CashFlowType>('receita');
+  protected readonly editingEntry = signal<CashFlowEntry | null>(null);
 
   protected readonly searchTerm = signal('');
   protected readonly typeFilter = signal<TypeFilter>('todos');
@@ -91,11 +99,27 @@ export class FluxoCaixa {
   }
 
   openDialog(type: CashFlowType = 'receita'): void {
+    this.editingEntry.set(null);
     this.dialogType.set(type);
     this.dialogOpen.set(true);
   }
 
+  editEntry(entry: CashFlowEntry): void {
+    this.actionError.set(null);
+    this.editingEntry.set(entry);
+    this.dialogOpen.set(true);
+  }
+
+  deleteEntry(entry: CashFlowEntry): void {
+    if (!this.canDelete() || !window.confirm(`Excluir o lançamento "${entry.description}"?`)) return;
+    this.actionError.set(null);
+    this.cashFlow.deleteEntry(entry.id).subscribe({
+      error: () => this.actionError.set('Não foi possível excluir. Confira se o caixa dessa data já foi fechado.'),
+    });
+  }
+
   closeDialog(): void {
     this.dialogOpen.set(false);
+    this.editingEntry.set(null);
   }
 }

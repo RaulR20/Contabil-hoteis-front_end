@@ -2,13 +2,17 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Icon } from '../../shared/icon/icon';
-import { CashFlowService, CashFlowType, paymentMethodIcon } from '../../core/services/cash-flow.service';
+import {
+  CashFlowService,
+  CashFlowType,
+  paymentMethodIcon,
+  paymentMethodTone,
+} from '../../core/services/cash-flow.service';
 import { NewEntryDialog } from '../../shared/new-entry-dialog/new-entry-dialog';
 
 interface Kpi {
   label: string;
   value: number;
-  variation: number;
   icon: string;
   tone: 'primary' | 'success' | 'danger' | 'warning';
 }
@@ -39,6 +43,7 @@ export class Home {
 
   protected readonly cashFlow = inject(CashFlowService);
   protected readonly paymentMethodIcon = paymentMethodIcon;
+  protected readonly paymentMethodTone = paymentMethodTone;
 
   protected readonly today = new Date();
 
@@ -49,14 +54,13 @@ export class Home {
     { label: 'Registrar Receita', description: 'Lançar entrada no fluxo de caixa', icon: 'arrow-up-right', type: 'receita' },
     { label: 'Registrar Despesa', description: 'Lançar saída no fluxo de caixa', icon: 'arrow-down-right', type: 'despesa' },
     { label: 'Fechar Caixa', description: 'Conferir e encerrar o turno', icon: 'lock', route: '/fechamento-caixa' },
-    { label: 'Gerar Relatório', description: 'Exportar relatório gerencial', icon: 'file-text' },
   ];
 
   protected readonly kpis = computed<Kpi[]>(() => [
-    { label: 'Saldo em Caixa', value: this.cashFlow.saldoEmCaixa(), variation: 4.8, icon: 'dollar-sign', tone: 'primary' },
-    { label: 'Receitas do Dia', value: this.cashFlow.receitasDoDia(), variation: 12.1, icon: 'trending-up', tone: 'success' },
-    { label: 'Despesas do Dia', value: this.cashFlow.despesasDoDia(), variation: -6.4, icon: 'credit-card', tone: 'danger' },
-    { label: 'Faturamento do Mês', value: this.cashFlow.faturamentoDoMes(), variation: 8.3, icon: 'bar-chart', tone: 'warning' },
+    { label: 'Saldo Acumulado', value: this.cashFlow.saldoEmCaixa(), icon: 'dollar-sign', tone: 'primary' },
+    { label: 'Receitas do Dia', value: this.cashFlow.receitasDoDia(), icon: 'trending-up', tone: 'success' },
+    { label: 'Despesas do Dia', value: this.cashFlow.despesasDoDia(), icon: 'credit-card', tone: 'danger' },
+    { label: 'Faturamento do Mês', value: this.cashFlow.faturamentoDoMes(), icon: 'bar-chart', tone: 'warning' },
   ]);
 
   protected readonly categoryBreakdown = computed<CategoryBreakdown[]>(() => {

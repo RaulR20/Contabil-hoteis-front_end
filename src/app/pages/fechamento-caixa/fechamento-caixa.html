@@ -3,14 +3,20 @@
     <h1>Fechamento de Caixa</h1>
     <p>Conferência do dinheiro em espécie ao final do turno</p>
   </div>
+  <button type="button" class="btn-deposit" (click)="openDepositDialog()" [disabled]="!!closingService.todayClosing()">
+    <app-icon name="plus-circle" [size]="16" />
+    Lançar Entrada de Dinheiro
+  </button>
 </div>
+@if (closingService.error() || cashFlow.error() || deposits.error() || saveError()) {
+  <p class="api-error">{{ closingService.error() || cashFlow.error() || deposits.error() || saveError() }}</p>
+}
 
 <div class="info-banner">
   <app-icon name="alert-circle" [size]="18" />
   <p>
     A conferência considera apenas os lançamentos pagos em <strong>Dinheiro</strong>. Pagamentos
-    por Cartão e Pix caem direto na conta bancária da empresa e não fazem parte da contagem
-    física do caixa.
+    por outros meios não fazem parte da contagem física. Suprimentos de caixa são somados separadamente.
   </p>
 </div>
 
@@ -64,8 +70,18 @@
               {{ entry.type === 'receita' ? '+' : '-' }}{{ entry.value | currency: 'BRL' }}
             </strong>
           </li>
-        } @empty {
-          <li class="empty-row">Nenhum lançamento em dinheiro registrado hoje.</li>
+        }
+        @for (deposit of deposits.todayDeposits(); track deposit.id) {
+          <li>
+            <div class="entry-info">
+              <strong>Suprimento: {{ deposit.origin }}</strong>
+              <small>{{ deposit.responsible }} · {{ deposit.occurredAt | date: 'HH:mm' }}</small>
+            </div>
+            <strong class="text-success">+{{ deposit.amount | currency: 'BRL' }}</strong>
+          </li>
+        }
+        @if (!cashEntriesToday().length && !deposits.todayDeposits().length) {
+          <li class="empty-row">Nenhuma movimentação em dinheiro registrada hoje.</li>
         }
       </ul>
     </div>
@@ -110,7 +126,7 @@
           <textarea formControlName="notes" rows="2" placeholder="Opcional — registre divergências, trocos pendentes etc."></textarea>
         </label>
 
-        <button type="submit" class="btn-primary" [disabled]="saving()">
+        <button type="submit" class="btn-primary" [disabled]="saving() || cashFlow.loading() || deposits.loading()">
           @if (saving()) {
             <span class="spinner"></span>
             Fechando Caixa...
@@ -167,3 +183,7 @@
     </tbody>
   </table>
 </section>
+
+@if (depositDialogOpen()) {
+  <app-cash-deposit-dialog (closed)="closeDepositDialog()" />
+}

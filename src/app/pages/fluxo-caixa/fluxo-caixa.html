@@ -8,12 +8,18 @@
     Novo Lançamento
   </button>
 </div>
+@if (cashFlow.error()) {
+  <p class="api-error">{{ cashFlow.error() }}</p>
+}
+@if (actionError()) {
+  <p class="api-error">{{ actionError() }}</p>
+}
 
 <section class="kpi-grid">
   <article class="kpi-card tone-primary">
     <div class="kpi-icon"><app-icon name="dollar-sign" [size]="20" /></div>
     <div class="kpi-body">
-      <span class="kpi-label">Saldo Atual em Caixa</span>
+      <span class="kpi-label">Saldo Acumulado</span>
       <strong class="kpi-value">{{ cashFlow.saldoEmCaixa() | currency: 'BRL' }}</strong>
     </div>
   </article>
@@ -99,6 +105,7 @@
         <th>Pagamento</th>
         <th class="align-right">Valor</th>
         <th class="align-right">Saldo</th>
+        <th>Ações</th>
       </tr>
     </thead>
     <tbody>
@@ -108,7 +115,7 @@
           <td>{{ entry.description }}</td>
           <td><span class="tag">{{ entry.category }}</span></td>
           <td>
-            <span class="payment-tag" [class]="'payment-' + entry.paymentMethod.toLowerCase()">
+            <span class="payment-tag" [class]="'tone-' + paymentMethodTone(entry.paymentMethod)">
               <app-icon [name]="paymentMethodIcon(entry.paymentMethod)" [size]="12" />
               {{ entry.paymentMethod }}
             </span>
@@ -121,10 +128,16 @@
             {{ entry.type === 'receita' ? '+' : '-' }}{{ entry.value | currency: 'BRL' }}
           </td>
           <td class="align-right nowrap">{{ entry.balance | currency: 'BRL' }}</td>
+          <td class="entry-actions">
+            <button type="button" (click)="editEntry(entry)" [attr.aria-label]="'Editar ' + entry.description">Editar</button>
+            @if (canDelete()) {
+              <button type="button" class="danger" (click)="deleteEntry(entry)" [attr.aria-label]="'Excluir ' + entry.description">Excluir</button>
+            }
+          </td>
         </tr>
       } @empty {
         <tr>
-          <td colspan="6" class="empty-state">Nenhum lançamento encontrado para os filtros selecionados.</td>
+          <td colspan="7" class="empty-state">Nenhum lançamento encontrado para os filtros selecionados.</td>
         </tr>
       }
     </tbody>
@@ -132,5 +145,5 @@
 </section>
 
 @if (dialogOpen()) {
-  <app-new-entry-dialog [initialType]="dialogType()" (closed)="closeDialog()" />
+  <app-new-entry-dialog [initialType]="dialogType()" [entry]="editingEntry()" (closed)="closeDialog()" />
 }

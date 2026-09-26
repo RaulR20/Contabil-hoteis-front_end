@@ -1,0 +1,319 @@
+<div class="page-header no-print">
+  <div>
+    <h1>Relatórios</h1>
+    <p>Monte seu relatório escolhendo o período e as informações que deseja incluir</p>
+  </div>
+  <button type="button" class="btn-primary" [disabled]="selectedCount() === 0" (click)="print()">
+    <app-icon name="file-text" [size]="16" />
+    Exportar / Imprimir
+  </button>
+</div>
+@if (cashFlow.error() || closingService.error() || reservationService.error()) {
+  <p class="api-error no-print">{{ cashFlow.error() || closingService.error() || reservationService.error() }}</p>
+}
+
+<section class="panel config-panel no-print">
+  <div class="panel-header">
+    <h2>Período</h2>
+  </div>
+  <div class="period-row">
+    @for (option of periodPresets; track option.value) {
+      <button
+        type="button"
+        class="period-btn"
+        [class.active]="preset() === option.value"
+        (click)="preset.set(option.value)"
+      >
+        {{ option.label }}
+      </button>
+    }
+
+    @if (preset() === 'personalizado') {
+      <label class="date-field">
+        <span>De</span>
+        <input type="date" [value]="customFrom()" (change)="customFrom.set($any($event.target).value)" />
+      </label>
+      <label class="date-field">
+        <span>Até</span>
+        <input type="date" [value]="customTo()" (change)="customTo.set($any($event.target).value)" />
+      </label>
+    }
+  </div>
+
+  <div class="panel-header with-actions">
+    <h2>Informações do Relatório</h2>
+    <div class="header-actions">
+      <span class="selected-count">{{ selectedCount() }} de {{ sections.length }} selecionadas</span>
+      <button type="button" class="link-btn" (click)="selectAll()">Selecionar todas</button>
+      <button type="button" class="link-btn" (click)="clearAll()">Limpar</button>
+    </div>
+  </div>
+
+  <div class="section-grid">
+    @for (section of sections; track section.id) {
+      <button
+        type="button"
+        class="section-card"
+        [class.active]="isSelected(section.id)"
+        (click)="toggleSection(section.id)"
+      >
+        <span class="checkbox">
+          @if (isSelected(section.id)) {
+            <app-icon name="check-circle" [size]="14" />
+          }
+        </span>
+        <span class="section-icon">
+          <app-icon [name]="section.icon" [size]="16" />
+        </span>
+        <span class="section-text">
+          <strong>{{ section.label }}</strong>
+          <small>{{ section.description }}</small>
+        </span>
+      </button>
+    }
+  </div>
+</section>
+
+<section class="report">
+  <header class="report-header">
+    <div>
+      <h2>Relatório Gerencial</h2>
+      <p>
+        Período: {{ range().from | date: 'dd/MM/yyyy' }} a {{ range().to | date: 'dd/MM/yyyy' }}
+      </p>
+    </div>
+    <div class="report-meta">
+      <small>Emitido por {{ responsible }}</small>
+      <small>{{ generatedAt | date: 'dd/MM/yyyy HH:mm' }}</small>
+    </div>
+  </header>
+
+  @if (selectedCount() === 0) {
+    <div class="empty-report">
+      <app-icon name="alert-circle" [size]="22" />
+      <p>Selecione ao menos uma informação acima para montar o relatório.</p>
+    </div>
+  }
+
+  @if (isSelected('caixa')) {
+    <div class="report-block">
+      <h3>Saldo e Movimentação dos Lançamentos</h3>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <small>Saldo Líquido dos Lançamentos</small>
+          <strong>{{ resumoCaixa().saldoAtual | currency: 'BRL' }}</strong>
+        </div>
+        <div class="summary-item">
+          <small>Entradas no Período</small>
+          <strong class="text-success">{{ resumoCaixa().entradas | currency: 'BRL' }}</strong>
+        </div>
+        <div class="summary-item">
+          <small>Saídas no Período</small>
+          <strong class="text-danger">{{ resumoCaixa().saidas | currency: 'BRL' }}</strong>
+        </div>
+        <div class="summary-item">
+          <small>Resultado do Período</small>
+          <strong [class.text-success]="resumoCaixa().resultado >= 0" [class.text-danger]="resumoCaixa().resultado < 0">
+            {{ resumoCaixa().resultado | currency: 'BRL' }}
+          </strong>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (isSelected('receitas')) {
+    <div class="report-block">
+      <h3>Receitas por Categoria</h3>
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Categoria</th>
+            <th class="align-right">Participação</th>
+            <th class="align-right">Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of receitasPorCategoria(); track row.category) {
+            <tr>
+              <td>{{ row.category }}</td>
+              <td class="align-right muted">{{ row.percentage }}%</td>
+              <td class="align-right text-success">{{ row.value | currency: 'BRL' }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="3" class="empty-state">Nenhuma receita no período.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (isSelected('despesas')) {
+    <div class="report-block">
+      <h3>Despesas e Custos por Categoria</h3>
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Categoria</th>
+            <th class="align-right">Participação</th>
+            <th class="align-right">Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of despesasPorCategoria(); track row.category) {
+            <tr>
+              <td>{{ row.category }}</td>
+              <td class="align-right muted">{{ row.percentage }}%</td>
+              <td class="align-right text-danger">{{ row.value | currency: 'BRL' }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="3" class="empty-state">Nenhuma despesa no período.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (isSelected('pagamentos')) {
+    <div class="report-block">
+      <h3>Formas de Pagamento</h3>
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Classificação</th>
+            <th class="align-right">Lançamentos</th>
+            <th class="align-right">Valor Líquido</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of porFormaPagamento(); track row.method) {
+            <tr>
+              <td>
+                <span class="payment-tag" [class]="'tone-' + paymentMethodTone(row.method)">
+                  <app-icon [name]="paymentMethodIcon(row.method)" [size]="12" />
+                  {{ row.method }}
+                </span>
+              </td>
+              <td class="align-right muted">{{ row.count }}</td>
+              <td class="align-right" [class.text-success]="row.value >= 0" [class.text-danger]="row.value < 0">
+                {{ row.value | currency: 'BRL' }}
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="3" class="empty-state">Nenhum pagamento no período.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (isSelected('receber')) {
+    <div class="report-block">
+      <h3>Valor Previsto das Reservas</h3>
+      <p>Estimativa de diárias; pagamentos já realizados não são abatidos automaticamente.</p>
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Hóspede</th>
+            <th>Quarto</th>
+            <th>Check-out</th>
+            <th class="align-right">Noites</th>
+            <th class="align-right">Valor Previsto</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of contasAReceber(); track row.id) {
+            <tr>
+              <td>{{ row.guestName }}</td>
+              <td>{{ row.room }}</td>
+              <td>{{ row.checkOut | date: 'dd/MM/yyyy' }}</td>
+              <td class="align-right muted">{{ row.nights }}</td>
+              <td class="align-right">{{ row.value | currency: 'BRL' }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="empty-state">Nenhuma reserva confirmada em aberto.</td></tr>
+          }
+        </tbody>
+        @if (contasAReceber().length) {
+          <tfoot>
+            <tr>
+              <td colspan="4">Total previsto</td>
+              <td class="align-right">{{ totalAReceber() | currency: 'BRL' }}</td>
+            </tr>
+          </tfoot>
+        }
+      </table>
+    </div>
+  }
+
+  @if (isSelected('fechamentos')) {
+    <div class="report-block">
+      <h3>Fechamentos de Caixa</h3>
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Responsável</th>
+            <th class="align-right">Esperado</th>
+            <th class="align-right">Contado</th>
+            <th class="align-right">Diferença</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (closing of fechamentosNoPeriodo(); track closing.id) {
+            <tr>
+              <td>{{ closing.date | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ closing.responsible }}</td>
+              <td class="align-right">{{ closing.expectedAmount | currency: 'BRL' }}</td>
+              <td class="align-right">{{ closing.countedAmount | currency: 'BRL' }}</td>
+              <td
+                class="align-right"
+                [class.text-success]="closing.difference === 0"
+                [class.text-danger]="closing.difference !== 0"
+              >
+                {{ closing.difference > 0 ? '+' : '' }}{{ closing.difference | currency: 'BRL' }}
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="empty-state">Nenhum fechamento no período.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (isSelected('extrato')) {
+    <div class="report-block">
+      <h3>Extrato Detalhado</h3>
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Descrição</th>
+            <th>Categoria</th>
+            <th>Classificação</th>
+            <th class="align-right">Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (entry of extrato(); track entry.id) {
+            <tr>
+              <td class="nowrap">{{ entry.date | date: 'dd/MM HH:mm' }}</td>
+              <td>{{ entry.description }}</td>
+              <td class="muted">{{ entry.category }}</td>
+              <td class="muted">{{ entry.paymentMethod }}</td>
+              <td
+                class="align-right nowrap"
+                [class.text-success]="entry.type === 'receita'"
+                [class.text-danger]="entry.type === 'despesa'"
+              >
+                {{ entry.type === 'receita' ? '+' : '-' }}{{ entry.value | currency: 'BRL' }}
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="empty-state">Nenhum lançamento no período.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

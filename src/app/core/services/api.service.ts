@@ -3,10 +3,12 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
   private readonly baseUrl = environment.apiUrl;
 
   get<T>(path: string, params?: Record<string, string | number | boolean>): Observable<T> {
@@ -19,6 +21,18 @@ export class ApiService {
 
   put<T>(path: string, body: unknown): Observable<T> {
     return this.http.put<T>(`${this.baseUrl}/${path}`, body);
+  }
+
+  patch<T>(path: string, body: unknown): Observable<T> {
+    return this.http.patch<T>(`${this.baseUrl}/${path}`, body);
+  }
+
+  hotelPath(path: string): string {
+    const hotelId = this.auth.user()?.hotelId;
+    if (!hotelId) {
+      throw new Error('Sessão expirada. Entre novamente.');
+    }
+    return `hotels/${hotelId}/${path}`;
   }
 
   delete<T>(path: string): Observable<T> {

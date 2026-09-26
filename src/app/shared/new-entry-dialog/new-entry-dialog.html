@@ -1,6 +1,6 @@
 <app-modal
-  [title]="'Novo Lançamento'"
-  [subtitle]="'Registre uma entrada ou saída no fluxo de caixa'"
+  [title]="entry() ? 'Editar Lançamento' : 'Novo Lançamento'"
+  [subtitle]="entry() ? 'Corrija os dados e o valor do lançamento' : 'Registre uma entrada ou saída no fluxo de caixa'"
   (closed)="close()"
 >
   <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
@@ -23,23 +23,6 @@
         <app-icon name="arrow-down-right" [size]="16" />
         Despesa
       </button>
-    </div>
-
-    <div class="field">
-      <span>Forma de Pagamento</span>
-      <div class="payment-toggle">
-        @for (method of paymentMethods; track method) {
-          <button
-            type="button"
-            class="payment-btn"
-            [class.active]="paymentMethod() === method"
-            (click)="setPaymentMethod(method)"
-          >
-            <app-icon [name]="paymentMethodIcon(method)" [size]="15" />
-            {{ method }}
-          </button>
-        }
-      </div>
     </div>
 
     <label class="field">
@@ -72,25 +55,43 @@
       </label>
 
       <label class="field">
+        <span>Forma de Pagamento</span>
+        <div class="select-wrap">
+          <select formControlName="paymentMethod">
+            @for (method of paymentMethods; track method) {
+              <option [value]="method">{{ method }}</option>
+            }
+          </select>
+          <app-icon name="chevron-down" [size]="14" />
+        </div>
+      </label>
+    </div>
+
+    <div class="field-row">
+      <label class="field">
         <span>Valor (R$)</span>
         <input type="number" formControlName="value" placeholder="0,00" min="0.01" step="0.01" />
         @if (submitted() && form.controls.value.invalid) {
           <small class="field-error">Informe um valor válido.</small>
         }
       </label>
-    </div>
 
-    <div class="field-row">
       <label class="field">
         <span>Data</span>
         <input type="date" formControlName="date" />
       </label>
+    </div>
 
+    <div class="field-row">
       <label class="field">
         <span>Horário</span>
         <input type="time" formControlName="time" />
       </label>
     </div>
+
+    @if (saveError()) {
+      <div class="alert-error">{{ saveError() }}</div>
+    }
 
     <div class="dialog-actions">
       <button type="button" class="btn-secondary" (click)="close()">Cancelar</button>
@@ -100,7 +101,7 @@
           Salvando...
         } @else {
           <app-icon name="plus-circle" [size]="16" />
-          Salvar Lançamento
+          {{ entry() ? 'Salvar Alterações' : 'Salvar Lançamento' }}
         }
       </button>
     </div>

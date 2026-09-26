@@ -1,6 +1,6 @@
 <aside class="sidebar" [class.collapsed]="collapsed()">
   <div class="sidebar-header">
-    <a routerLink="/home" class="brand">
+    <a [routerLink]="startRoute()" class="brand">
       <span class="brand-mark">
         <app-icon name="building" [size]="20" />
       </span>
@@ -22,7 +22,7 @@
   </div>
 
   <nav class="sidebar-nav">
-    @for (section of sections; track section.title) {
+    @for (section of visibleSections(); track section.title) {
       <div class="nav-section" [class.accent]="section.accent" [class.muted]="section.collapsible">
         @if (!collapsed()) {
           @if (section.collapsible) {
@@ -73,7 +73,7 @@
       @if (!collapsed()) {
         <div class="user-info">
           <strong>{{ user()?.name }}</strong>
-          <small>{{ user()?.role }}</small>
+          <small>{{ roleLabel() }}</small>
         </div>
       }
     </div>

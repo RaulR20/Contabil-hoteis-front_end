@@ -7,12 +7,11 @@
 
 <div class="info-banner">
   <app-icon name="alert-circle" [size]="18" />
-  <p>
-    Esta tela é apenas estrutural. A confirmação de check-in e check-out será habilitada quando a
-    integração com o backend e as APIs de reservas estiver disponível — por ora, as ações abaixo
-    ficam desativadas para evitar alterações de status sem validação de dados reais.
-  </p>
+  <p>Check-in e check-out atualizam o status da reserva no banco de dados.</p>
 </div>
+@if (reservationService.error() || actionError()) {
+  <p class="api-error">{{ reservationService.error() || actionError() }}</p>
+}
 
 <section class="columns">
   <div class="panel">
@@ -34,7 +33,7 @@
             <small>Check-out</small>
             <span>{{ reservation.checkOut | date: 'dd/MM/yyyy' }}</span>
           </div>
-          <button type="button" class="action-btn" disabled title="Indisponível — requer integração com backend/API">
+          <button type="button" class="action-btn" [disabled]="savingId() === reservation.id" (click)="checkIn(reservation)">
             <app-icon name="lock" [size]="13" />
             Realizar Check-in
           </button>
@@ -64,7 +63,7 @@
             <small>Check-in</small>
             <span>{{ reservation.checkIn | date: 'dd/MM/yyyy' }}</span>
           </div>
-          <button type="button" class="action-btn" disabled title="Indisponível — requer integração com backend/API">
+          <button type="button" class="action-btn" [disabled]="savingId() === reservation.id" (click)="checkOut(reservation)">
             <app-icon name="lock" [size]="13" />
             Realizar Check-out
           </button>

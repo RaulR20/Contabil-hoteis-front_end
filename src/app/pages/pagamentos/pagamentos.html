@@ -1,62 +1,125 @@
 <div class="page-header">
   <div>
     <h1>Pagamentos e Contas</h1>
-    <p>Central de meios de pagamento e integrações financeiras do hotel</p>
+    <p>Extrato de transações classificado por forma de pagamento</p>
   </div>
-  <span class="badge-soon">
-    <app-icon name="clock" [size]="14" />
-    Em breve
-  </span>
 </div>
 
 <div class="info-banner">
   <app-icon name="alert-circle" [size]="18" />
-  <p>
-    Esta área está em construção. Aqui serão centralizados os pagamentos recebidos por cartão,
-    dinheiro, Pix, boleto e outras formas integradas via API, com conciliação automática junto
-    ao fluxo de caixa.
-  </p>
+  <p>Estes valores são lançamentos registrados no sistema. A conciliação com bancos e operadoras ainda não está disponível. Apenas <strong>Dinheiro</strong> entra na conferência física do caixa.</p>
 </div>
+@if (cashFlow.error()) {
+  <p class="api-error">{{ cashFlow.error() }}</p>
+}
+@if (actionError()) {
+  <p class="api-error">{{ actionError() }}</p>
+}
 
-<section class="panel">
-  <div class="panel-header">
-    <h2>Formas de Pagamento</h2>
-  </div>
-  <div class="method-grid">
-    @for (method of methods; track method.label) {
-      <article class="method-card">
-        <div class="method-icon">
-          <app-icon [name]="method.icon" [size]="20" />
-        </div>
-        <div class="method-body">
-          <div class="method-title-row">
-            <strong>{{ method.label }}</strong>
-            <span class="status-chip" [class]="'status-' + method.status">
-              {{ statusLabel(method.status) }}
-            </span>
-          </div>
-          <p>{{ method.description }}</p>
-        </div>
-      </article>
-    }
-  </div>
-</section>
-
-<section class="panel">
-  <div class="panel-header">
-    <h2>Integrações Planejadas</h2>
-  </div>
-  <div class="integration-list">
-    @for (integration of integrations; track integration.label) {
-      <div class="integration-item">
-        <div class="integration-icon">
-          <app-icon [name]="integration.icon" [size]="18" />
-        </div>
-        <div>
-          <strong>{{ integration.label }}</strong>
-          <p>{{ integration.description }}</p>
-        </div>
+<section class="method-grid">
+  @for (summary of methodSummaries(); track summary.method) {
+    <button
+      type="button"
+      class="method-card"
+      [class]="'tone-' + paymentMethodTone(summary.method)"
+      [class.active]="selectedMethod() === summary.method"
+      (click)="selectMethod(summary.method)"
+    >
+      <div class="method-icon">
+        <app-icon [name]="paymentMethodIcon(summary.method)" [size]="18" />
       </div>
+      <span class="method-label">{{ summary.method }}</span>
+      <strong class="method-total" [class.negative]="summary.total < 0">
+        {{ summary.total | currency: 'BRL' }}
+      </strong>
+      <span class="method-count">{{ summary.count }} lançamento(s)</span>
+      @if (isPhysicalCash(summary.method)) {
+        <span class="method-badge">físico</span>
+      }
+    </button>
+  }
+</section>
+
+<section class="panel">
+  <div class="filters">
+    <div class="search-box">
+      <app-icon name="search" [size]="14" />
+      <input
+        type="text"
+        placeholder="Buscar por descrição..."
+        [value]="searchTerm()"
+        (input)="searchTerm.set($any($event.target).value)"
+      />
+    </div>
+
+    <select [value]="typeFilter()" (change)="typeFilter.set($any($event.target).value)">
+      <option value="todos">Todos os tipos</option>
+      <option value="receita">Receitas</option>
+      <option value="despesa">Despesas</option>
+    </select>
+
+    <label class="date-field">
+      <span>De</span>
+      <input type="date" [value]="dateFrom()" (change)="dateFrom.set($any($event.target).value)" />
+    </label>
+
+    <label class="date-field">
+      <span>Até</span>
+      <input type="date" [value]="dateTo()" (change)="dateTo.set($any($event.target).value)" />
+    </label>
+
+    @if (hasActiveFilters()) {
+      <button type="button" class="btn-clear" (click)="clearFilters()">
+        <app-icon name="x" [size]="13" />
+        Limpar filtros
+      </button>
     }
   </div>
+
+  <table class="ledger-table">
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Descrição</th>
+        <th>Categoria</th>
+        <th>Classificação</th>
+        <th class="align-right">Valor</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (entry of filteredEntries(); track entry.id) {
+        <tr>
+          <td class="nowrap">{{ entry.date | date: 'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ entry.description }}</td>
+          <td><span class="tag">{{ entry.category }}</span></td>
+          <td>
+            <span class="payment-tag" [class]="'tone-' + paymentMethodTone(entry.paymentMethod)">
+              <app-icon [name]="paymentMethodIcon(entry.paymentMethod)" [size]="12" />
+              {{ entry.paymentMethod }}
+            </span>
+          </td>
+          <td
+            class="align-right nowrap"
+            [class.text-success]="entry.type === 'receita'"
+            [class.text-danger]="entry.type === 'despesa'"
+          >
+            {{ entry.type === 'receita' ? '+' : '-' }}{{ entry.value | currency: 'BRL' }}
+          </td>
+          <td class="entry-actions">
+            <button type="button" (click)="editEntry(entry)">Editar</button>
+            <button type="button" class="danger" (click)="deleteEntry(entry)">Excluir</button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="empty-state">Nenhuma transação encontrada para os filtros selecionados.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
 </section>
+
+@if (editingEntry()) {
+  <app-new-entry-dialog [entry]="editingEntry()" (closed)="editingEntry.set(null)" />
+}

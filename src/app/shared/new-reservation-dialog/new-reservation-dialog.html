@@ -26,8 +26,8 @@
         <div class="select-wrap">
           <select formControlName="room">
             <option value="" disabled>Selecione</option>
-            @for (room of rooms; track room) {
-              <option [value]="room">{{ room }}</option>
+            @for (room of rooms(); track room.id) {
+              <option [value]="room.id">{{ room.label }}</option>
             }
           </select>
           <app-icon name="chevron-down" [size]="14" />
@@ -71,6 +71,12 @@
         <app-icon name="alert-circle" [size]="14" />
         Este quarto já está reservado para o período selecionado.
       </div>
+    }
+    @if (rooms().length === 0) {
+      <div class="alert-error">Nenhum quarto disponível. Cadastre um quarto no backend antes de reservar.</div>
+    }
+    @if (saveError()) {
+      <div class="alert-error">{{ saveError() }}</div>
     }
 
     <div class="dialog-actions">

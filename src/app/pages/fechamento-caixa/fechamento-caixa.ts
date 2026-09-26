@@ -3,34 +3,39 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { startWith } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Icon } from '../../shared/icon/icon';
+import { CashDepositDialog } from '../../shared/cash-deposit-dialog/cash-deposit-dialog';
 import { CashFlowService, paymentMethodIcon } from '../../core/services/cash-flow.service';
+import { CashDepositService } from '../../core/services/cash-deposit.service';
 import { CashClosing, CashClosingService } from '../../core/services/cash-closing.service';
-import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-fechamento-caixa',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, ReactiveFormsModule, Icon],
+  imports: [CurrencyPipe, DatePipe, ReactiveFormsModule, Icon, CashDepositDialog],
   templateUrl: './fechamento-caixa.html',
   styleUrl: './fechamento-caixa.scss',
 })
 export class FechamentoCaixa {
   private readonly fb = inject(FormBuilder);
-  private readonly auth = inject(AuthService);
 
   protected readonly cashFlow = inject(CashFlowService);
+  protected readonly deposits = inject(CashDepositService);
   protected readonly closingService = inject(CashClosingService);
   protected readonly paymentMethodIcon = paymentMethodIcon;
 
   protected readonly submitted = signal(false);
   protected readonly saving = signal(false);
+  protected readonly saveError = signal<string | null>(null);
+  protected readonly depositDialogOpen = signal(false);
 
   protected readonly cashEntriesToday = computed(() =>
     this.cashFlow.todayEntries().filter((entry) => entry.paymentMethod === 'Dinheiro'),
   );
 
-  protected readonly expectedAmount = this.cashFlow.dinheiroEmCaixaHoje;
+  protected readonly expectedAmount = computed(() =>
+    this.cashFlow.dinheiroEmCaixaHoje() + this.deposits.todayAmount());
 
   protected readonly form = this.fb.nonNullable.group({
     countedAmount: [null as number | null, [Validators.required, Validators.min(0)]],
@@ -49,6 +54,14 @@ export class FechamentoCaixa {
     return counted === null ? null : counted - this.expectedAmount();
   });
 
+  openDepositDialog(): void {
+    this.depositDialogOpen.set(true);
+  }
+
+  closeDepositDialog(): void {
+    this.depositDialogOpen.set(false);
+  }
+
   submit(): void {
     this.submitted.set(true);
 
@@ -57,17 +70,18 @@ export class FechamentoCaixa {
     }
 
     const { countedAmount, notes } = this.form.getRawValue();
+    this.saveError.set(null);
     this.saving.set(true);
-
-    setTimeout(() => {
-      this.closingService.close({
-        expectedAmount: this.expectedAmount(),
-        countedAmount: countedAmount ?? 0,
-        responsible: this.auth.user()?.name ?? 'Usuário',
-        notes: notes.trim(),
+    this.closingService.close({ countedAmount: countedAmount ?? 0, notes: notes.trim() })
+      .subscribe({
+        next: () => this.saving.set(false),
+        error: (error: HttpErrorResponse) => {
+          this.saving.set(false);
+          this.saveError.set(error.status === 409
+            ? 'O caixa de hoje já foi fechado.'
+            : 'Não foi possível fechar o caixa. Tente novamente.');
+        },
       });
-      this.saving.set(false);
-    }, 400);
   }
 
   protected differenceStatus(closing: CashClosing): 'confere' | 'sobra' | 'falta' {

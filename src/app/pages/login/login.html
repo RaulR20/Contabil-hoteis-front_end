@@ -30,7 +30,7 @@
     <form class="login-card" (ngSubmit)="submit()" novalidate>
       <div class="login-card-header">
         <h2>Acessar o sistema</h2>
-        <p>Entre com suas credenciais para continuar</p>
+        <p>Entre com o e-mail e a senha cadastrados no servidor</p>
       </div>
 
       @if (errorMessage()) {
@@ -41,14 +41,14 @@
       }
 
       <label class="field">
-        <span>Usuário</span>
+        <span>E-mail</span>
         <div class="input-wrap">
           <app-icon name="user" [size]="16" />
           <input
-            type="text"
+            type="email"
             name="username"
             autocomplete="username"
-            placeholder="admin"
+            placeholder="seu.email@hotel.local"
             [(ngModel)]="username"
             required
           />
@@ -82,12 +82,6 @@
         }
       </button>
 
-      <div class="demo-hint">
-        <span>Ambiente de demonstração — usuário e senha mockados.</span>
-        <button type="button" class="btn-link" (click)="fillDemoCredentials()">
-          Usar admin / admin123
-        </button>
-      </div>
     </form>
   </div>
 </div>

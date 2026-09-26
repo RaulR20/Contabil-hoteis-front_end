@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { RouterOutlet } from '@angular/router';
 import { Sidebar } from '../sidebar/sidebar';
 import { Icon } from '../../shared/icon/icon';
 import { AuthService } from '../../core/auth/auth.service';
@@ -12,11 +12,11 @@ import { AuthService } from '../../core/auth/auth.service';
   styleUrl: './main-layout.scss',
 })
 export class MainLayout {
-  private readonly auth = inject(AuthService);
-  private readonly router = inject(Router);
+  protected readonly auth = inject(AuthService);
 
   logout(): void {
-    this.auth.logout();
-    this.router.navigateByUrl('/login');
+    this.auth.logout().subscribe({
+      next: () => window.location.assign('/login'),
+    });
   }
 }

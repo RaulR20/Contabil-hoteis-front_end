@@ -1,7 +1,10 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { Observable, map, tap } from 'rxjs';
+import { ApiService } from './api.service';
 
 export interface CashClosing {
   id: string;
+  businessDate: string;
   date: Date;
   expectedAmount: number;
   countedAmount: number;
@@ -11,74 +14,67 @@ export interface CashClosing {
 }
 
 export interface NewCashClosing {
-  expectedAmount: number;
   countedAmount: number;
-  responsible: string;
   notes: string;
 }
 
-function daysAgo(days: number, hours: number, minutes: number): Date {
-  const date = new Date();
-  date.setDate(date.getDate() - days);
-  date.setHours(hours, minutes, 0, 0);
-  return date;
-}
-
-function seedClosings(): CashClosing[] {
-  return [
-    {
-      id: crypto.randomUUID(),
-      date: daysAgo(1, 22, 5),
-      expectedAmount: 612.4,
-      countedAmount: 612.4,
-      difference: 0,
-      responsible: 'Raul Fernandes',
-      notes: '',
-    },
-    {
-      id: crypto.randomUUID(),
-      date: daysAgo(2, 21, 50),
-      expectedAmount: 388.0,
-      countedAmount: 373.0,
-      difference: -15.0,
-      responsible: 'Raul Fernandes',
-      notes: 'Falta de troco identificada, aguardando conferência com o turno da tarde.',
-    },
-    {
-      id: crypto.randomUUID(),
-      date: daysAgo(3, 22, 15),
-      expectedAmount: 745.9,
-      countedAmount: 750.0,
-      difference: 4.1,
-      responsible: 'Raul Fernandes',
-      notes: '',
-    },
-  ];
+interface ApiClosing {
+  id: number;
+  businessDate: string;
+  date: string;
+  expectedAmount: number;
+  countedAmount: number;
+  difference: number;
+  responsible: string;
+  notes: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
 export class CashClosingService {
-  private readonly closingsSignal = signal<CashClosing[]>(seedClosings());
-
+  private readonly api = inject(ApiService);
+  private readonly closingsSignal = signal<CashClosing[]>([]);
   readonly closings = computed(() =>
-    [...this.closingsSignal()].sort((a, b) => b.date.getTime() - a.date.getTime()),
-  );
-
+    [...this.closingsSignal()].sort((a, b) => b.date.getTime() - a.date.getTime()));
   readonly todayClosing = computed(() =>
-    this.closingsSignal().find((closing) => this.isSameDay(closing.date, new Date())),
-  );
+    this.closingsSignal().find((closing) => closing.businessDate === this.todayIsoDate()));
+  readonly error = signal<string | null>(null);
 
-  close(entry: NewCashClosing): void {
-    const newClosing: CashClosing = {
-      id: crypto.randomUUID(),
-      date: new Date(),
-      difference: entry.countedAmount - entry.expectedAmount,
-      ...entry,
-    };
-    this.closingsSignal.update((closings) => [...closings, newClosing]);
+  constructor() {
+    this.reload();
   }
 
-  private isSameDay(a: Date, b: Date): boolean {
-    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  reload(): void {
+    this.error.set(null);
+    this.api.get<ApiClosing[]>(this.api.hotelPath('cash-closings')).subscribe({
+      next: (rows) => this.closingsSignal.set(rows.map((row) => this.fromApi(row))),
+      error: () => this.error.set('Não foi possível carregar os fechamentos do servidor.'),
+    });
+  }
+
+  close(entry: NewCashClosing): Observable<CashClosing> {
+    return this.api.post<ApiClosing>(this.api.hotelPath('cash-closings'), entry).pipe(
+      map((row) => this.fromApi(row)),
+      tap((created) => this.closingsSignal.update((rows) => [created, ...rows])),
+    );
+  }
+
+  private fromApi(row: ApiClosing): CashClosing {
+    return {
+      id: String(row.id),
+      businessDate: row.businessDate,
+      date: new Date(row.date),
+      expectedAmount: Number(row.expectedAmount),
+      countedAmount: Number(row.countedAmount),
+      difference: Number(row.difference),
+      responsible: row.responsible ?? '',
+      notes: row.notes ?? '',
+    };
+  }
+
+  private todayIsoDate(): string {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${now.getFullYear()}-${month}-${day}`;
   }
 }

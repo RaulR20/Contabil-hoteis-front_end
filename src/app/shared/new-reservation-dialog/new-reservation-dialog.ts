@@ -1,6 +1,7 @@
 import { Component, inject, output, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { ROOMS, ReservationService } from '../../core/services/reservation.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ReservationService } from '../../core/services/reservation.service';
 import { Modal } from '../modal/modal';
 import { Icon } from '../icon/icon';
 
@@ -28,10 +29,11 @@ export class NewReservationDialog {
 
   readonly closed = output<void>();
 
-  protected readonly rooms = ROOMS;
+  protected readonly rooms = this.reservationService.rooms;
   protected readonly submitted = signal(false);
   protected readonly saving = signal(false);
   protected readonly roomConflict = signal(false);
+  protected readonly saveError = signal<string | null>(null);
 
   protected readonly form = this.fb.nonNullable.group(
     {
@@ -53,35 +55,46 @@ export class NewReservationDialog {
   submit(): void {
     this.submitted.set(true);
     this.roomConflict.set(false);
+    this.saveError.set(null);
 
     if (this.form.invalid || this.saving()) {
       return;
     }
 
     const { guestName, cpf, room, checkIn, checkOut, guestsCount, notes } = this.form.getRawValue();
+    const roomId = Number(room);
     const checkInDate = this.parseDate(checkIn, 14, 0);
     const checkOutDate = this.parseDate(checkOut, 12, 0);
 
-    if (!this.reservationService.isRoomAvailable(room, checkInDate, checkOutDate)) {
+    if (!this.reservationService.isRoomAvailable(roomId, checkInDate, checkOutDate)) {
       this.roomConflict.set(true);
       return;
     }
 
     this.saving.set(true);
 
-    setTimeout(() => {
-      this.reservationService.addReservation({
+    this.reservationService.addReservation({
         guestName: guestName.trim(),
         cpf,
-        room,
+        roomId,
         checkIn: checkInDate,
         checkOut: checkOutDate,
         guestsCount,
         notes: notes.trim(),
+      }).subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.closed.emit();
+        },
+        error: (error: HttpErrorResponse) => {
+          this.saving.set(false);
+          if (error.status === 409) {
+            this.roomConflict.set(true);
+          } else {
+            this.saveError.set('Não foi possível salvar a reserva. Tente novamente.');
+          }
+        },
       });
-      this.saving.set(false);
-      this.closed.emit();
-    }, 400);
   }
 
   private parseDate(iso: string, hours: number, minutes: number): Date {

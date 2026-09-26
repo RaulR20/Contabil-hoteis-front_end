@@ -1,0 +1,52 @@
+<div class="page-header">
+  <div>
+    <h1>Usuários</h1>
+    <p>Crie logins separados para gerente e caixa. Cada pessoa entra com seu e-mail e senha.</p>
+  </div>
+</div>
+
+@if (error()) { <p class="message error">{{ error() }}</p> }
+@if (success()) { <p class="message success">{{ success() }}</p> }
+
+<section class="panel">
+  <h2>Novo usuário</h2>
+  <form [formGroup]="form" (ngSubmit)="create()">
+    <label>Nome <input type="text" formControlName="name" autocomplete="name" /></label>
+    <label>E-mail <input type="email" formControlName="email" autocomplete="off" /></label>
+    <label>Função
+      <select formControlName="role">
+        <option value="MANAGER">Gerente</option>
+        <option value="CASHIER">Caixa</option>
+      </select>
+    </label>
+    <label>Senha inicial <input type="password" formControlName="password" autocomplete="new-password" minlength="12" /></label>
+    <p class="hint">Use pelo menos 12 caracteres e entregue a senha à pessoa responsável.</p>
+    <button type="submit" [disabled]="saving()">Criar usuário</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h2>Contas cadastradas</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Nome</th><th>Login (e-mail)</th><th>Função</th><th>Nova senha</th></tr></thead>
+      <tbody>
+        @for (user of users(); track user.id) {
+          <tr>
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ roleName(user.role) }}</td>
+            <td>
+              <div class="password-actions">
+                <input type="password" aria-label="Nova senha" placeholder="Pelo menos 12 caracteres"
+                  [value]="resetPasswords()[user.id] ?? ''"
+                  (input)="setResetPassword(user.id, $any($event.target).value)" />
+                <button type="button" (click)="resetPassword(user)">Alterar senha</button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

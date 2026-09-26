@@ -69,3 +69,20 @@ a {
 button {
   font-family: inherit;
 }
+
+/* Impressão de relatórios — mantém só o conteúdo, sem o shell da aplicação. */
+@media print {
+  app-sidebar,
+  .topbar {
+    display: none !important;
+  }
+
+  .content {
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  body {
+    background: #fff;
+  }
+}

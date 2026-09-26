@@ -82,7 +82,8 @@ export class Hospedes implements OnInit {
     return guest.stays.reduce((sum, stay) => sum + stay.totalSpent, 0);
   }
 
-  protected lastStay(guest: Guest): Date {
+  protected lastStay(guest: Guest): Date | null {
+    if (guest.stays.length === 0) return null;
     return guest.stays.reduce(
       (latest, stay) => (stay.checkOut > latest ? stay.checkOut : latest),
       guest.stays[0].checkOut,

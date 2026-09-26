@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../core/auth/auth.service';
+import { AuthService, landingPage } from '../../core/auth/auth.service';
 import { Icon } from '../../shared/icon/icon';
 
 @Component({
@@ -12,7 +12,7 @@ import { Icon } from '../../shared/icon/icon';
   styleUrl: './login.scss',
 })
 export class Login {
-  protected username = 'admin';
+  protected username = '';
   protected password = '';
   protected readonly showPassword = signal(false);
   protected readonly loading = signal(false);
@@ -36,9 +36,9 @@ export class Login {
     this.loading.set(true);
 
     this.auth.login(this.username, this.password).subscribe({
-      next: () => {
+      next: (user) => {
         this.loading.set(false);
-        this.router.navigateByUrl('/home');
+        this.router.navigateByUrl(landingPage(user.role));
       },
       error: (err: Error) => {
         this.loading.set(false);
@@ -47,8 +47,4 @@ export class Login {
     });
   }
 
-  fillDemoCredentials(): void {
-    this.username = 'admin';
-    this.password = 'admin123';
-  }
 }

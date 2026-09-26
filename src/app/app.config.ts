@@ -1,5 +1,5 @@
 import { ApplicationConfig, LOCALE_ID, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, withXsrfConfiguration } from '@angular/common/http';
 import { registerLocaleData } from '@angular/common';
 import localePt from '@angular/common/locales/pt';
 import { provideRouter } from '@angular/router';
@@ -12,7 +12,10 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withFetch()),
+    provideHttpClient(withFetch(), withXsrfConfiguration({
+      cookieName: 'XSRF-TOKEN',
+      headerName: 'X-XSRF-TOKEN',
+    })),
     { provide: LOCALE_ID, useValue: 'pt-BR' },
   ],
 };

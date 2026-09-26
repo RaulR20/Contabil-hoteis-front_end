@@ -16,6 +16,8 @@ export class Reservas {
 
   protected readonly dialogOpen = signal(false);
   protected readonly searchTerm = signal('');
+  protected readonly actionError = signal<string | null>(null);
+  protected readonly savingId = signal<string | null>(null);
 
   protected get filteredReservations(): Reservation[] {
     const term = this.searchTerm().trim().toLowerCase();
@@ -40,16 +42,30 @@ export class Reservas {
   }
 
   confirm(reservation: Reservation): void {
-    this.reservationService.updateStatus(reservation.id, 'Confirmada');
+    this.changeStatus(reservation, 'Confirmada');
   }
 
   cancel(reservation: Reservation): void {
-    this.reservationService.updateStatus(reservation.id, 'Cancelada');
+    this.changeStatus(reservation, 'Cancelada');
+  }
+
+  private changeStatus(reservation: Reservation, status: Reservation['status']): void {
+    this.actionError.set(null);
+    this.savingId.set(reservation.id);
+    this.reservationService.updateStatus(reservation.id, status).subscribe({
+      next: () => this.savingId.set(null),
+      error: () => {
+        this.savingId.set(null);
+        this.actionError.set('Não foi possível atualizar a reserva. Tente novamente.');
+      },
+    });
   }
 
   protected statusTone(status: Reservation['status']): string {
     switch (status) {
       case 'Confirmada':
+      case 'Em hospedagem':
+      case 'Finalizada':
         return 'success';
       case 'Cancelada':
         return 'danger';

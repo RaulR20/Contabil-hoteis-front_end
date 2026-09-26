@@ -9,6 +9,10 @@
   </button>
 </div>
 
+@if (reservationService.error() || actionError()) {
+  <p class="api-error">{{ reservationService.error() || actionError() }}</p>
+}
+
 <section class="kpi-grid">
   <article class="kpi-card tone-primary">
     <div class="kpi-icon"><app-icon name="calendar" [size]="20" /></div>
@@ -84,10 +88,10 @@
           </td>
           <td class="align-right">
             @if (reservation.status === 'Reserva Criada') {
-              <button type="button" class="action-btn confirm" (click)="confirm(reservation)">Confirmar</button>
-              <button type="button" class="action-btn cancel" (click)="cancel(reservation)">Cancelar</button>
+              <button type="button" class="action-btn confirm" [disabled]="savingId() === reservation.id" (click)="confirm(reservation)">Confirmar</button>
+              <button type="button" class="action-btn cancel" [disabled]="savingId() === reservation.id" (click)="cancel(reservation)">Cancelar</button>
             } @else if (reservation.status === 'Confirmada') {
-              <button type="button" class="action-btn cancel" (click)="cancel(reservation)">Cancelar</button>
+              <button type="button" class="action-btn cancel" [disabled]="savingId() === reservation.id" (click)="cancel(reservation)">Cancelar</button>
             } @else {
               <span class="muted">—</span>
             }

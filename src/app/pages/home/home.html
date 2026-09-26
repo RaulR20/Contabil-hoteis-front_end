@@ -8,6 +8,9 @@
     Novo Lançamento
   </button>
 </div>
+@if (cashFlow.error()) {
+  <p class="api-error">{{ cashFlow.error() }}</p>
+}
 
 <section class="kpi-grid">
   @for (kpi of kpis(); track kpi.label) {
@@ -18,10 +21,6 @@
       <div class="kpi-body">
         <span class="kpi-label">{{ kpi.label }}</span>
         <strong class="kpi-value">{{ kpi.value | currency: 'BRL' }}</strong>
-        <span class="kpi-variation" [class.negative]="kpi.variation < 0">
-          <app-icon [name]="kpi.variation < 0 ? 'arrow-down-right' : 'arrow-up-right'" [size]="12" />
-          {{ kpi.variation > 0 ? '+' : '' }}{{ kpi.variation }}% vs. ontem
-        </span>
       </div>
     </article>
   }
@@ -63,7 +62,7 @@
             <td>{{ entry.description }}</td>
             <td><span class="tag">{{ entry.category }}</span></td>
             <td>
-              <span class="payment-tag" [class]="'payment-' + entry.paymentMethod.toLowerCase()">
+              <span class="payment-tag" [class]="'tone-' + paymentMethodTone(entry.paymentMethod)">
                 <app-icon [name]="paymentMethodIcon(entry.paymentMethod)" [size]="12" />
                 {{ entry.paymentMethod }}
               </span>

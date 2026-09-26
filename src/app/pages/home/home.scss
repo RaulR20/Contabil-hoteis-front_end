@@ -273,19 +273,24 @@
   font-weight: 600;
   white-space: nowrap;
 
-  &.payment-dinheiro {
+  &.tone-warning {
     background: var(--color-warning-soft);
     color: var(--color-warning);
   }
 
-  &.payment-cartão {
+  &.tone-primary {
     background: var(--color-primary-soft);
     color: var(--color-primary);
   }
 
-  &.payment-pix {
+  &.tone-success {
     background: var(--color-success-soft);
     color: var(--color-success);
+  }
+
+  &.tone-neutral {
+    background: var(--color-bg);
+    color: var(--color-text-muted);
   }
 }
 
@@ -352,4 +357,8 @@
   .quick-actions {
     grid-template-columns: 1fr;
   }
+}
+.api-error {
+  color: #b91c1c;
+  margin: 0 0 1rem;
 }

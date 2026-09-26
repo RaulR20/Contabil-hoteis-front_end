@@ -38,14 +38,14 @@
     <article class="kpi-card tone-warning">
       <div class="kpi-icon"><app-icon name="dollar-sign" [size]="20" /></div>
       <div class="kpi-body">
-        <span class="kpi-label">Ticket Médio por Estadia</span>
+        <span class="kpi-label">Valor Médio por Reserva</span>
         <strong class="kpi-value">{{ averageTicket() | currency: 'BRL' }}</strong>
       </div>
     </article>
     <article class="kpi-card tone-primary">
       <div class="kpi-icon"><app-icon name="bar-chart" [size]="20" /></div>
       <div class="kpi-body">
-        <span class="kpi-label">Total Faturado (Histórico)</span>
+        <span class="kpi-label">Valor Previsto das Reservas</span>
         <strong class="kpi-value">{{ totalRevenue() | currency: 'BRL' }}</strong>
       </div>
     </article>
@@ -72,7 +72,7 @@
           <th>Contato</th>
           <th>Estadias</th>
           <th>Última Visita</th>
-          <th>Total Gasto</th>
+          <th>Valor Previsto</th>
           <th class="align-right">Ações</th>
         </tr>
       </thead>
@@ -95,7 +95,7 @@
             <td>
               <span class="stay-count">{{ guest.stays.length }}</span>
             </td>
-            <td>{{ lastStay(guest) | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ lastStay(guest) ? (lastStay(guest) | date: 'dd/MM/yyyy') : '—' }}</td>
             <td>{{ totalSpent(guest) | currency: 'BRL' }}</td>
             <td class="align-right">
               <button type="button" class="action-btn" (click)="openDetail(guest)">

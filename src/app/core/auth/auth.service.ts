@@ -1,49 +1,62 @@
-import { Injectable, signal } from '@angular/core';
-import { Observable, delay, of, tap, throwError } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Injectable, inject, signal } from '@angular/core';
+import { Observable, catchError, map, of, switchMap, tap, throwError } from 'rxjs';
+
+export type UserRole = 'ADMIN' | 'MANAGER' | 'CASHIER';
 
 export interface AuthUser {
-  username: string;
+  id: number;
+  hotelId: number;
+  email: string;
   name: string;
-  role: string;
+  role: UserRole;
 }
 
-const MOCK_CREDENTIALS = { username: 'admin', password: 'admin123' };
-const MOCK_USER: AuthUser = { username: 'admin', name: 'Raul Fernandes', role: 'Gestor Financeiro' };
-const STORAGE_KEY = 'contabil-hoteis:auth-user';
+export function landingPage(role: UserRole): string {
+  return role === 'ADMIN' ? '/home' : '/fluxo-caixa';
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly userSignal = signal<AuthUser | null>(this.readStoredUser());
-
+  private readonly http = inject(HttpClient);
+  private readonly userSignal = signal<AuthUser | null>(null);
   readonly user = this.userSignal.asReadonly();
 
   isAuthenticated(): boolean {
     return this.userSignal() !== null;
   }
 
-  login(username: string, password: string): Observable<AuthUser> {
-    const isValid = username.trim().toLowerCase() === MOCK_CREDENTIALS.username && password === MOCK_CREDENTIALS.password;
-
-    if (!isValid) {
-      return throwError(() => new Error('Usuário ou senha inválidos.')).pipe(delay(500));
-    }
-
-    return of(MOCK_USER).pipe(
-      delay(600),
-      tap((user) => {
-        this.userSignal.set(user);
-        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+  refresh(): Observable<AuthUser | null> {
+    return this.http.get<AuthUser>('/api/auth/me').pipe(
+      tap((user) => this.userSignal.set(user)),
+      catchError(() => {
+        this.userSignal.set(null);
+        return of(null);
       }),
     );
   }
 
-  logout(): void {
-    this.userSignal.set(null);
-    sessionStorage.removeItem(STORAGE_KEY);
+  login(email: string, password: string): Observable<AuthUser> {
+    return this.http.get<void>('/api/auth/csrf').pipe(
+      switchMap(() => this.http.post<AuthUser>('/api/auth/login', { email: email.trim(), password })),
+      switchMap((user) => this.http.get<void>('/api/auth/csrf').pipe(map(() => user))),
+      tap((user) => this.userSignal.set(user)),
+      catchError((error: HttpErrorResponse) =>
+        throwError(
+          () =>
+            new Error(
+              error.status === 401
+                ? 'E-mail ou senha inválidos.'
+                : 'Não foi possível entrar. Confira se o backend está funcionando.',
+            ),
+        ),
+      ),
+    );
   }
 
-  private readStoredUser(): AuthUser | null {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as AuthUser) : null;
+  logout(): Observable<void> {
+    return this.http.post<void>('/api/auth/logout', {}).pipe(
+      tap(() => this.userSignal.set(null)),
+    );
   }
 }
